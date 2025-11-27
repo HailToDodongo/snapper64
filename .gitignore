@@ -1,0 +1,9 @@
+filesystem/
+build/
+*.z64
+cmake*/
+.idea/
+*.o
+node_modules/
+
+src/demoList.h
