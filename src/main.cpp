@@ -34,7 +34,7 @@ namespace {
   }*/
 
   constinit uint64_t frameTime = 0;
-  constinit int nextDemo = 0;
+  constinit int nextDemo = -1;
 
   uint32_t frame = 0;
   uint32_t nextDemoSel = 0;
@@ -60,14 +60,16 @@ namespace {
       buff += (ctx.fb->stride/4 - ctx.fb->width);
     }
 
+    auto held = joypad_get_buttons_held(JOYPAD_PORT_1);
     auto press = joypad_get_buttons_pressed(JOYPAD_PORT_1);
     if(press.d_up || press.c_up)--nextDemoSel;
     if(press.d_down || press.c_down)++nextDemoSel;
     if(nextDemoSel == 0)nextDemoSel = tests.size();
     if(nextDemoSel >= tests.size())nextDemoSel = 0;
 
-    if(press.a || press.b) {
+    if(held.a || held.b) {
       nextDemo = nextDemoSel;
+      ctx.dumpData = held.b;
       ctx.reset();
     }
 
@@ -101,6 +103,10 @@ namespace {
     Text::setColor({0x77, 0x77, 0x99});
     Text::print(20, posY, "(C) 2025 Max Beboek (HailToDodongo)"); posY += 10;
     Text::setColor();
+
+    Text::printSmall(128, 128, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    Text::printSmall(128, 128+8, "abcdefghijklmnopqrstuvwxyz");
+    Text::printSmall(128, 128+16, "0123456789_");
 
     Text::setSpaceHidden(true);
   }
@@ -172,10 +178,13 @@ int main()
       {
         nextDemo = -1;
       }
-      /*++nextDemo;
+/*
+      ++nextDemo;
       if(nextDemo >= (int)tests.size()) {
         nextDemo = -1;
-      }*/
+      }
+      nextDemo = -1; // TEST
+      */
     }
 
     Text::printf(16, 240-32, "%.2fms", TICKS_TO_US(frameTime) * (1.0f / 1000.0f));

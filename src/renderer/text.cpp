@@ -14,6 +14,7 @@ namespace {
   constinit uint8_t ignoreChar = 0;
 
   #include "font.h"
+  #include "font3x5.h"
 }
 
 void Text::setSpaceHidden(bool hidden)
@@ -71,6 +72,44 @@ int Text::print(int x, int y, const char *str) {
   return x;
 }
 
+int Text::printSmall(int x, int y, const char* str)
+{
+  auto fbBuff = (uint8_t*)ctx.fb->buffer;
+
+  auto *buffStart = (uint64_t*)&fbBuff[y * ctx.fb->stride + x*4];
+
+  while(*str)
+  {
+    uint8_t charCode = (uint8_t)*str - '-';
+    if(charCode >= ('a' - '-'))charCode -= ('a' - 'A');
+
+    uint16_t charData = FONT_3x5_DATA[charCode];
+    auto buff = buffStart;
+    ++x;
+
+    for(int y=0; y<5; ++y) {
+      uint64_t col = (charData & 0b001) ? currColor : 0;
+      col <<= 32;
+      buff[0] = col | ((charData & 0b010) ? currColor : 0);
+
+      col = (charData & 0b100) ? currColor : 0;
+      buff[1] = col << 32;
+
+      buff += (ctx.fb->stride / 8);
+      charData >>= 3;
+    }
+    // draw extra black line below
+    buff[0] = 0;
+    buff[1] = 0;
+
+    buffStart += 2;
+    ++str;
+  }
+  //uint64_t charData = FONT_8x8_DATA[0];
+
+  return x;
+}
+
 int Text::printf(int x, int y, const char *fmt, ...) {
   char buffer[FMT_BUFF_SIZE];
   va_list args;
@@ -78,4 +117,14 @@ int Text::printf(int x, int y, const char *fmt, ...) {
   vsnprintf(buffer, FMT_BUFF_SIZE, fmt, args);
   va_end(args);
   return print(x, y, buffer);
+}
+
+int Text::printfSmall(int x, int y, const char* fmt, ...)
+{
+  char buffer[FMT_BUFF_SIZE];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buffer, FMT_BUFF_SIZE, fmt, args);
+  va_end(args);
+  return printSmall(x, y, buffer);
 }

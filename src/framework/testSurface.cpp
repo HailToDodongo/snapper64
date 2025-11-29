@@ -17,6 +17,8 @@ void TestSurface::draw(int x, int y)
     dst += ctx.fb->stride;
   }
 
+  uint32_t borderCol = lastTestSuccess ? 0x55EE55'00 : 0xEE5555'00;
+
   // draw white border around image
   for(int row=-1; row <= surface.height; ++row) {
     if(row == -1 || row == surface.height) {
@@ -25,21 +27,24 @@ void TestSurface::draw(int x, int y)
       borderPtr += (y + row) * (ctx.fb->stride / 4);
       borderPtr += x - 1;
       for(int col=0; col < surface.width + 2; ++col) {
-        *borderPtr++ = 0xFFFFFFFF;
+        *borderPtr++ = borderCol;
       }
     } else {
       // left/right border
       uint32_t *leftPtr = (uint32_t*)ctx.fb->buffer;
       leftPtr += (y + row) * (ctx.fb->stride / 4);
       leftPtr += x - 1;
-      *leftPtr = 0xFFFFFFFF;
+      *leftPtr = borderCol;
 
       uint32_t *rightPtr = (uint32_t*)ctx.fb->buffer;
       rightPtr += (y + row) * (ctx.fb->stride / 4);
       rightPtr += x + surface.width;
-      *rightPtr = 0xFFFFFFFF;
+      *rightPtr = borderCol;
     }
   }
 
-  Text::print(x & ~0b11, y-10, "aaa");
+  Text::setColor(color_from_packed32(borderCol));
+  Text::printSmall(x & ~0b11, y-7, name.c_str());
+  //Text::printSmall(128, 128, "-.0123456789_:");
+  Text::setColor();
 }

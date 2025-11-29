@@ -53,19 +53,26 @@ bool TestGroup::run()
 
   Text::setColor();
 
-  Assert assert{};
   for(uint32_t i=0; i<entries.size(); ++i)
   {
+    Assert assert{};
+    assert.hashGroup = nameHash;
+    assert.hashTest = entries[i].nameHash;
+
     auto &entry = entries[i];
 
     if(forceDisplay) {
-      memset(ctx.fb->buffer, 0x22, ctx.fb->height * ctx.fb->stride);
+      // @TODO: use RSP?
+      memset(ctx.fb->buffer, 0, ctx.fb->height * ctx.fb->stride);
     }
 
     entry.func(assert);
 
+    Text::setColor({0x99, 0x99, 0xFF});
     Text::print(16, 16+0, name.c_str());
+    Text::setColor();
     Text::printf(16, 16+8, "%03d/%03d: %s", i, entries.size(), entry.name.c_str());
+    //Text::printf(16, 16+16, "UUID: %08X_%08X", nameHash, entry.nameHash);
 
     if(forceDisplay)VI::show();
 

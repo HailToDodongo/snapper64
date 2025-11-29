@@ -25,7 +25,8 @@ void VI::init()
 {
   vi_init();
   vi_set_dedither(false);
-  vi_set_aa_mode(VI_AA_MODE_RESAMPLE);
+  //vi_set_aa_mode(VI_AA_MODE_RESAMPLE);
+  vi_set_aa_mode(VI_AA_MODE_NONE);
   vi_set_interlaced(false);
   vi_set_divot(false);
   vi_set_gamma(VI_GAMMA_DISABLE);

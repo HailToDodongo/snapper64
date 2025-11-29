@@ -58,13 +58,17 @@ namespace
     data.attr_factor = (abs(nz) > FLT_MIN) ? (-1.0f / nz) : 0;
     p.lft = nz < 0 ? 1 : 0;
 
-    p.ish = data.ish = (abs(data.hy) > FLT_MIN) ? (data.hx / data.hy) : 0;
-    p.ism = (abs(data.my) > FLT_MIN) ? (data.mx / data.my) : 0;
-    p.isl = (abs(ly) > FLT_MIN) ? (lx / ly) : 0;
+    float ish = data.ish = (abs(data.hy) > FLT_MIN) ? (data.hx / data.hy) : 0;
+    float ism = (abs(data.my) > FLT_MIN) ? (data.mx / data.my) : 0;
+    float isl = (abs(ly) > FLT_MIN) ? (lx / ly) : 0;
     data.fy = fm_floorf(y1) - y1;
 
+    p.ish = float_to_s16_16(ish);
+    p.ism = float_to_s16_16(ism);
+    p.isl = float_to_s16_16(isl);
+
     p.xh = x1 + data.fy * data.ish;
-    p.xm = x1 + data.fy * p.ism;
+    p.xm = x1 + data.fy * ism;
     p.xl = x2;
     return p;
 /*
@@ -210,9 +214,9 @@ std::vector<uint64_t> RDP::triangleWrite(TriParams &p, uint32_t attrs) {
   uint32_t out1 = (_carg(p.y2f, 0x3FFF, 16) | _carg(p.y1f, 0x3FFF, 0));
   out[0] |= ((uint64_t)out0 << 32) | (uint64_t)out1;
 
-  out.push_back(((uint64_t)float_to_s16_16(p.xl) << 32) | (uint64_t)float_to_s16_16(p.isl));
-  out.push_back(((uint64_t)float_to_s16_16(p.xh) << 32) | (uint64_t)float_to_s16_16(p.ish));
-  out.push_back(((uint64_t)float_to_s16_16(p.xm) << 32) | (uint64_t)float_to_s16_16(p.ism));
+  out.push_back(((uint64_t)float_to_s16_16(p.xl) << 32) | (uint64_t)((uint32_t)p.isl));
+  out.push_back(((uint64_t)float_to_s16_16(p.xh) << 32) | (uint64_t)((uint32_t)p.ish));
+  out.push_back(((uint64_t)float_to_s16_16(p.xm) << 32) | (uint64_t)((uint32_t)p.ism));
 
   if(attrs & TriAttr::SHADE) {
     rdpq_write_shade_coeffs(out, p);

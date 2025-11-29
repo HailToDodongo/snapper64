@@ -18,7 +18,7 @@ add_executable(rdp_test
         src/renderer/rdp.h
         src/renderer/rdp.cpp
         src/testList.h
-        src/tests/RDPFillTri.cpp
+        src/tests/RDPFillTriRand.cpp
         src/framework/testGroup.h
         src/framework/assert.h
         src/framework/testGroup.cpp
@@ -30,6 +30,10 @@ add_executable(rdp_test
         src/utils/vecMath.h
         src/framework/testSurface.cpp
         src/framework/testSurface.cpp
+        src/utils/hash.h
+        src/framework/assert.cpp
+        tools/dataConverter.cpp
+        src/tests/RDPFillTri.cpp
 )
 
 set_property(TARGET rdp_test PROPERTY CXX_STANDARD 23)

@@ -10,6 +10,10 @@
 class TestSurface
 {
   private:
+    friend struct Assert;
+
+    std::string name{};
+    bool lastTestSuccess{};
     surface_t surface{};
 
   public:
@@ -35,7 +39,14 @@ class TestSurface
       return { (float)surface.width / 2, (float)surface.height / 2 };
     }
 
+    int getByteSize() const {
+      return surface.stride * surface.height;
+    }
+
     void attachAndClear() {
+      name.clear();
+      lastTestSuccess = false;
+
       RDP::DPL{64}
         .add(RDP::attachAndClear(surface))
         .runSync();

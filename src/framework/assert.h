@@ -8,6 +8,12 @@
 
 struct Assert
 {
+  // context to identify a specific assert
+  // later used to load / dump buffer
+  uint32_t hashGroup{0};
+  uint32_t hashTest{0};
+  uint32_t hashAssert{0};
+
   void result(bool isOk)
   {
     if(isOk) {
@@ -23,8 +29,5 @@ struct Assert
     return *this;
   }
 
-  Assert &surface(const TestSurface &surf, bool hiddenBits = false)
-  {
-    return *this;
-  }
+  Assert &surface(TestSurface &surf, bool hiddenBits = false);
 };

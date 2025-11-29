@@ -68,6 +68,10 @@ clean:
 	rm -rf $(BUILD_DIR) *.z64 src/testList.h
 	rm -rf filesystem
 
+cleanDumps:
+	rm -rf assets/*.test
+	rm -rf filesystem/*.test
+
 -include $(wildcard $(BUILD_DIR)/*.d)
 
 .PHONY: all clean

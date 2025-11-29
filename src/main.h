@@ -24,6 +24,9 @@ struct Context
   int countAssertPassed = 0;
   int countAssertFailed = 0;
 
+  // if set, dumps data (e.g. framebuffer) to create reference files
+  bool dumpData{};
+
   void reset() {
     countAssertPassed = 0;
     countAssertFailed = 0;

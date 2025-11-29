@@ -6,6 +6,7 @@
 #include <libdragon.h>
 #include <bit>
 #include <vector>
+#include <array>
 
 namespace 
 {
@@ -199,7 +200,7 @@ namespace RDP
     uint32_t lft;
     int32_t y1f, y2f, y3f;
     float xl, xm, xh;
-    float isl, ism, ish;
+    int32_t isl, ism, ish;
     uint32_t final_rgba[4];
     float DrgbaDx[4];
     float DrgbaDe[4];
@@ -374,6 +375,10 @@ namespace RDP
   std::vector<uint64_t> triangleWrite(TriParams &p, uint32_t attrs = TriAttr::POS);
 
   std::vector<uint64_t> triangle(uint32_t attrs, const Vertex &v0, const Vertex &v1, const Vertex &v2);
+
+  inline TriParams triangleGen(uint32_t attrs, const std::array<Vertex, 3> &verts) {
+    return triangleGen(attrs, verts[0], verts[1], verts[2]);
+  }
 
   constexpr uint64_t syncPipe() { return bitCmd(0xE7); }
   constexpr uint64_t syncFull() { return bitCmd(0x29); }
