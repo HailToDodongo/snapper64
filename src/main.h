@@ -15,6 +15,12 @@ namespace {
     sprintf(buf, "%08lX", val);
     return std::string{buf};
   }
+  std::string toHex(uint64_t val)
+  {
+    char buf[17];
+    sprintf(buf, "%016llX", val);
+    return std::string{buf};
+  }
 }
 
 struct Context
@@ -26,6 +32,7 @@ struct Context
 
   // if set, dumps data (e.g. framebuffer) to create reference files
   bool dumpData{};
+  bool autoAdvance{};
 
   void reset() {
     countAssertPassed = 0;

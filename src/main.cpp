@@ -68,9 +68,10 @@ namespace {
     if(nextDemoSel == 0)nextDemoSel = tests.size();
     if(nextDemoSel >= tests.size())nextDemoSel = 0;
 
-    if(held.a || held.b) {
+    if(held.a || held.b || press.start) {
       nextDemo = nextDemoSel;
       ctx.dumpData = held.b;
+      ctx.autoAdvance = press.start;
       ctx.reset();
     }
 
@@ -177,12 +178,13 @@ int main()
       if(!tests[nextDemo].run())
       {
         nextDemo = -1;
-      } else {
+      } else if (ctx.autoAdvance) {
         ++nextDemo;
         if(nextDemo >= (int)tests.size()) {
           nextDemo = -1;
         }
       }
+
     }
   }
 }
