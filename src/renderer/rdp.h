@@ -186,7 +186,7 @@ namespace RDP
         value |= bitVal(on ? 1 : 0, 5, 5); return *this;
       }
 
-      operator uint64_t() const { return value; }
+      constexpr operator uint64_t() const { return value; }
   };
 
   struct Vertex {
@@ -380,6 +380,10 @@ namespace RDP
     return triangleGen(attrs, verts[0], verts[1], verts[2]);
   }
 
+  inline auto triangle(uint32_t attrs, const std::array<Vertex, 3> &verts) {
+    return triangle(attrs, verts[0], verts[1], verts[2]);
+  }
+
   constexpr uint64_t syncPipe() { return bitCmd(0xE7); }
   constexpr uint64_t syncFull() { return bitCmd(0x29); }
 
@@ -395,13 +399,15 @@ namespace RDP
       bbp = BBP::_16;
     }
 
+    memset(surf.buffer, 0, surf.stride * surf.height);
+
     return {
       syncPipe(),
       setColorImage(surf.buffer, fmt, bbp, surf.stride/4),
-      setScissor(0, 0, surf.width, surf.height),
+      setScissor(0, 0, surf.width-1, surf.height-1),
       setOtherModes(OtherMode().cycleType(CYCLE::FILL)),
       setFillColor({0, 0, 0, 0}),
-      fillRect(0, 0, 320, 240)
+      // fillRect(0, 0, 320, 240)
     };
   }
 }

@@ -43,6 +43,13 @@ class TestSurface
       return surface.stride * surface.height;
     }
 
+    void clear()
+    {
+      name.clear();
+      lastTestSuccess = false;
+      memset(surface.buffer, 0, getByteSize());
+    }
+
     void attachAndClear() {
       name.clear();
       lastTestSuccess = false;

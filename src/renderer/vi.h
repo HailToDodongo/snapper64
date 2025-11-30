@@ -12,5 +12,7 @@ namespace VI
   void init();
   void show();
 
+  void keepAlive();
+
   void setFrameBuffers(std::array<surface_t, 3> fb);
 }

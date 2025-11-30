@@ -48,7 +48,8 @@ $(PROJECT_NAME).z64: $(BUILD_DIR)/$(PROJECT_NAME).dfs
 
 fonts:
 	node tools/createFont.mjs assets/font.png src/font.h
-	node tools/createFontDelta.mjs assets/font64.png src/font64.h
+	node tools/createFontDobs
+	elta.mjs assets/font64.png src/font64.h
 
 sc64:
 	make -j8

@@ -3,6 +3,8 @@
 * @license MIT
 */
 #include "vi.h"
+
+#include "text.h"
 #include "../main.h"
 
 namespace
@@ -10,13 +12,44 @@ namespace
   constinit std::array<surface_t, 3> fbs{};
   constinit uint32_t frame{0};
 
+  volatile uint64_t lastAliveTime{};
+
   volatile int freeFB = 3;
   volatile int viFrameIdx = 0;
+
+  [[noreturn]]
+  void rdpCrashScreen()
+  {
+    //vi_wait_vblank();
+    for(;;)
+    {
+      int posY = 64;
+      Text::setColor({0xFF, 0x22, 0x22});
+      Text::printf(64, posY, "!!! RDP HAS CRASHED !!!"); posY += 8;
+      Text::setColor();
+      Text::printf(64, posY, "Please Power Cycle"); posY += 8;
+      posY += 8;
+      Text::printf(64, posY, "DP_CLCK: %08X", *DP_CLOCK); posY += 8;
+      Text::printf(64, posY, "DP_BUSY: %08X", *DP_BUSY); posY += 8;
+      Text::printf(64, posY, "DP_CURR: %08X", *DP_CURRENT); posY += 8;
+      Text::printf(64, posY, "DP_END : %08X", *DP_END); posY += 8;
+
+      //vi_show(ctx.fb);
+      *VI_ORIGIN = (uint32_t)(ctx.fb->buffer);
+      wait_ms(10);
+    }
+  }
+
   void onViInterrupt()
   {
     disable_interrupts();
     if(freeFB < 3)freeFB += 1;
     viFrameIdx += 1;
+
+    if((get_ticks() - lastAliveTime) > TICKS_FROM_MS(2'000)) {
+      rdpCrashScreen();
+    }
+
     enable_interrupts();
   }
 }
@@ -48,10 +81,19 @@ void VI::show()
   freeFB -= 1;
   enable_interrupts();
 
+  keepAlive();
+
   vi_show(ctx.fb);
 
   ++frame;
   ctx.fb = &fbs[frame % 3];
+}
+
+void VI::keepAlive()
+{
+  disable_interrupts();
+  lastAliveTime = get_ticks();
+  enable_interrupts();
 }
 
 void VI::setFrameBuffers(std::array<surface_t, 3> fb)

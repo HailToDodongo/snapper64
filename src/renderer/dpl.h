@@ -76,7 +76,7 @@ namespace RDP
     }
 
     void runSync(uint64_t waitTicks = 0) {
-      if(waitTicks == 0)waitTicks = TICKS_FROM_MS(1000);
+      if(waitTicks == 0)waitTicks = TICKS_FROM_MS(10'000);
       add(syncFull());
       runAsync();
       await(waitTicks);

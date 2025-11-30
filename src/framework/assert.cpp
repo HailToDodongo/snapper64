@@ -3,6 +3,7 @@
 * @license MIT
 */
 #include "assert.h"
+#include "../renderer/vi.h"
 
 namespace
 {
@@ -46,7 +47,7 @@ namespace
   }
 }
 
-Assert & Assert::surface(TestSurface &surf, bool hiddenBits)
+Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
 {
   ++hashAssert;
 
@@ -66,7 +67,10 @@ Assert & Assert::surface(TestSurface &surf, bool hiddenBits)
 
     std::vector<char> hexBuf{};
     hexBuf.resize(byteSize * 2 + 2);
+
+    VI::keepAlive();
     base64Encode(hexBuf.data(), buf, byteSize);
+    VI::keepAlive();
 
     fputs("$DATA=", stderr);
     fputs(hexBuf.data(), stderr);
@@ -85,7 +89,9 @@ Assert & Assert::surface(TestSurface &surf, bool hiddenBits)
     }
 
     //dfs_open() @TODO: do load into to avoid "rom:/" prefix
+    VI::keepAlive();
     auto refData = (uint8_t*)asset_load(romPath.c_str(), &refDataSize);
+    VI::keepAlive();
 
     /*assertf(refDataSize == surf.getByteSize(), "Incorrect reference data size: %d != %d",
       refDataSize, surf.getByteSize());

@@ -104,9 +104,9 @@ namespace {
     Text::print(20, posY, "(C) 2025 Max Beboek (HailToDodongo)"); posY += 10;
     Text::setColor();
 
-    Text::printSmall(128, 128, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    Text::printSmall(128, 128+8, "abcdefghijklmnopqrstuvwxyz");
-    Text::printSmall(128, 128+16, "0123456789_");
+    //Text::printSmall(128, 128, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    //Text::printSmall(128, 128+8, "abcdefghijklmnopqrstuvwxyz");
+    //Text::printSmall(128, 128+16, "0123456789_");
 
     Text::setSpaceHidden(true);
   }

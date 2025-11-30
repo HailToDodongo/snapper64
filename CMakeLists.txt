@@ -33,7 +33,7 @@ add_executable(rdp_test
         src/utils/hash.h
         src/framework/assert.cpp
         tools/dataConverter.cpp
-        src/tests/RDPFillTri.cpp
+        src/tests/RDPRectTri.cpp
 )
 
 set_property(TARGET rdp_test PROPERTY CXX_STANDARD 23)

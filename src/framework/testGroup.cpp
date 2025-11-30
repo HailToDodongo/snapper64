@@ -11,45 +11,11 @@
 
 namespace
 {
-  void ensureRDPNotCrashed()
-  {
-    RDP::DPL dplTest{8};
-    dplTest.add(RDP::syncPipe())
-      .add(RDP::syncFull())
-      .runAsyncUnsafe();
-
-    bool isCrashed = false;
-    uint64_t ticksWaitEnd = get_ticks() + TICKS_FROM_MS(250);
-    while(*DP_STATUS & DP_STATUS_PIPE_BUSY)
-    {
-      if(get_ticks() > ticksWaitEnd) {
-        isCrashed = true;
-        break;
-      }
-    }
-
-    if(isCrashed)
-    {
-      int posY = 64;
-      Text::setColor({0xFF, 0x22, 0x22});
-      Text::printf(64, posY, "!!! RDP HAS CRASHED !!!"); posY += 8;
-      Text::setColor();
-      Text::printf(64, posY, "Please Power Cycle"); posY += 16;
-
-      Text::printf(64, posY, "DP_CLCK: %08X", *DP_CLOCK); posY += 8;
-      Text::printf(64, posY, "DP_BUSY: %08X", *DP_BUSY); posY += 8;
-      Text::printf(64, posY, "DP_CURR: %08X", *DP_CURRENT); posY += 8;
-      Text::printf(64, posY, "DP_END : %08X", *DP_END); posY += 8;
-
-      for(;;) { wait_ms(1); }
-    }
-  }
 }
 
 bool TestGroup::run()
 {
   bool forceDisplay = true;
-  ensureRDPNotCrashed();
 
   Text::setColor();
 
@@ -81,6 +47,11 @@ bool TestGroup::run()
     {
       // @TODO: abort logic
       return false;
+    }
+
+    if(joypad_get_buttons_held(JOYPAD_PORT_1).z)
+    {
+      wait_ms(500);
     }
   }
 
