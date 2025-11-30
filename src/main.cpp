@@ -190,12 +190,5 @@ int main()
         }
       }
     }
-
-    Text::printf(16, 240-32, "%.2fms", TICKS_TO_US(frameTime) * (1.0f / 1000.0f));
-    frameTime = get_ticks() - t;
-
-    if(frameTime < TICKS_FROM_US(16666)) {
-      wait_ticks(TICKS_FROM_US(16666) - frameTime);
-    }
   }
 }
