@@ -7,9 +7,17 @@
 #include "../utils/hash.h"
 #include <string>
 #include <functional>
+#include <ranges>
 
 
 using TestFunc = std::function<void(Assert&)>;
+
+template <typename... R>
+  constexpr auto TestMatrix(R... range)
+{
+  return std::views::cartesian_product(
+      std::views::iota(0, range)...);
+}
 
 class TestGroup
 {

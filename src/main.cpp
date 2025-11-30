@@ -183,14 +183,12 @@ int main()
       if(!tests[nextDemo].run())
       {
         nextDemo = -1;
+      } else {
+        ++nextDemo;
+        if(nextDemo >= (int)tests.size()) {
+          nextDemo = -1;
+        }
       }
-/*
-      ++nextDemo;
-      if(nextDemo >= (int)tests.size()) {
-        nextDemo = -1;
-      }
-      nextDemo = -1; // TEST
-      */
     }
 
     Text::printf(16, 240-32, "%.2fms", TICKS_TO_US(frameTime) * (1.0f / 1000.0f));

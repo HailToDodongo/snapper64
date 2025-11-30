@@ -39,7 +39,6 @@ namespace Tests::RDPFillTriRand
          .runSync();
 
         assert.surface(surf);
-        assert.equals(1, 1);
 
         surf.draw(32, 48);
       });

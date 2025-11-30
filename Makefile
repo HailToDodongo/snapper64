@@ -3,7 +3,7 @@ include $(N64_INST)/include/n64.mk
 
 PROJECT_NAME = "repeat64"
 
-N64_CXXFLAGS += -std=gnu++20 -Os -fno-exceptions -fsingle-precision-constant
+N64_CXXFLAGS += -std=gnu++23 -Os -fno-exceptions -fsingle-precision-constant
 
 src = $(wildcard src/*.cpp)
 src += $(wildcard src/tests/*.cpp)

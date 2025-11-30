@@ -91,15 +91,11 @@ namespace Tests::RDPRectNoSync2C
   {
     TestGroup group{"RDP Rect No-Sync-Env 2C"};
 
-    for(int cycle=0; cycle<2; ++cycle)
-    {
-      for(int i=0; i<20; ++i)
-      {
-        std::string name = "Rect Env " + std::to_string(i) + " | In Cycle-" + std::to_string(cycle+1);
-        group.test(name, [=](Assert &assert) {
-          testCase(assert, cycle, i);
-        });
-      }
+    for (auto&& [cycle, i] : TestMatrix(2, 20)) {
+      std::string name = "Rect Env " + std::to_string(i) + " | In Cycle-" + std::to_string(cycle+1);
+      group.test(name, [=](Assert &assert) {
+        testCase(assert, cycle, i);
+      });
     }
 
     return group;
