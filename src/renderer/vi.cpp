@@ -12,13 +12,13 @@ namespace
   constinit std::array<surface_t, 3> fbs{};
   constinit uint32_t frame{0};
 
-  volatile uint64_t lastAliveTime{};
+  volatile int64_t lastAliveTime{};
 
   volatile int freeFB = 3;
   volatile int viFrameIdx = 0;
 
   [[noreturn]]
-  void rdpCrashScreen()
+  void rdpCrashScreen(uint64_t ticksDiff)
   {
     //vi_wait_vblank();
     for(;;)
@@ -33,6 +33,8 @@ namespace
       Text::printf(64, posY, "DP_BUSY: %08X", *DP_BUSY); posY += 8;
       Text::printf(64, posY, "DP_CURR: %08X", *DP_CURRENT); posY += 8;
       Text::printf(64, posY, "DP_END : %08X", *DP_END); posY += 8;
+      posY += 8;
+      Text::printf(64, posY, "Last keep-alive: %ld us", TICKS_TO_US(ticksDiff)); posY += 8;
 
       //vi_show(ctx.fb);
       *VI_ORIGIN = (uint32_t)(ctx.fb->buffer);
@@ -46,8 +48,9 @@ namespace
     if(freeFB < 3)freeFB += 1;
     viFrameIdx += 1;
 
-    if((get_ticks() - lastAliveTime) > TICKS_FROM_MS(2'000)) {
-      rdpCrashScreen();
+    int64_t ticksDiff = (int64_t)C0_COUNT() - lastAliveTime;
+    if(ticksDiff > TICKS_FROM_MS(3'000)) {
+      rdpCrashScreen(ticksDiff);
     }
 
     enable_interrupts();
@@ -92,7 +95,7 @@ void VI::show()
 void VI::keepAlive()
 {
   disable_interrupts();
-  lastAliveTime = get_ticks();
+  lastAliveTime = C0_COUNT();
   enable_interrupts();
 }
 

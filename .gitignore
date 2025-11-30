@@ -4,6 +4,8 @@ build/
 cmake*/
 .idea/
 *.o
+nul
+test.txt
 node_modules/
 
 src/demoList.h
