@@ -167,14 +167,8 @@ int main()
     VI::show();
     joypad_poll();
 
-    auto held = joypad_get_buttons_held(JOYPAD_PORT_1);
-    auto press = joypad_get_buttons_pressed(JOYPAD_PORT_1);
-    if(press.start)nextDemo = -1;
-
     Text::setColor();
     Text::setSpaceHidden(false);
-
-    uint64_t t = get_ticks();
 
     if(nextDemo < 0) {
       demoMenuDraw();
