@@ -27,12 +27,21 @@ bool TestGroup::run()
 
     auto &entry = entries[i];
 
+    auto held = joypad_get_buttons_held(JOYPAD_PORT_1);
+    bool oldDump = ctx.dumpData;
+    if(held.b)ctx.dumpData = true;
+
     if(forceDisplay) {
       // @TODO: use RSP?
       memset(ctx.fb->buffer, 0, ctx.fb->height * ctx.fb->stride);
     }
 
+    auto t = get_ticks();
     entry.func(assert);
+    t = get_ticks() - t;
+    debugf("[Debug] Test %ld us\n", TICKS_TO_US(t));
+
+    ctx.dumpData = oldDump;
 
     Text::setColor({0x99, 0x99, 0xFF});
     Text::print(16, 16+0, name.c_str());
@@ -49,8 +58,7 @@ bool TestGroup::run()
       return false;
     }
 
-    if(joypad_get_buttons_held(JOYPAD_PORT_1).z)
-    {
+    if(held.z) {
       wait_ms(500);
     }
   }

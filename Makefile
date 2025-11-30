@@ -12,9 +12,9 @@ src += $(wildcard src/renderer/*.cpp)
 src += $(wildcard src/utils/*.cpp)
 
 assets_png = $(wildcard assets/*.rgba16.png)
-assets_test = $(wildcard assets/*.test)
+assets_test = $(wildcard assets/*.test.7z)
 assets_conv = $(patsubst assets/%,filesystem/%,$(assets_png:%.png=%.sprite))
-assets_conv += $(patsubst assets/%,filesystem/%,$(assets_test:%.test=%.test))
+assets_conv += $(patsubst assets/%,filesystem/%,$(assets_test:%.test.7z=%.test))
 
 all: $(PROJECT_NAME).z64
 
@@ -34,11 +34,12 @@ filesystem/%.sprite: assets/%.png
 	@echo "    [SPRITE] $@"
 	$(N64_MKSPRITE) $(MKSPRITE_FLAGS) -o $(dir $@) "$<"
 
-filesystem/%.test: assets/%.test
+filesystem/%.test: assets/%.test.7z
 	@mkdir -p $(dir $@)
 	@echo "    [TEST-DUMP] $@ $<"
-	cp "$<" $@
-	$(N64_BINDIR)/mkasset -c 1 -o $(dir $@) $@
+	# cp "$<" $@
+	7z e "$<" -o$(dir $@) -y -bso0 -bsp0
+	$(N64_BINDIR)/mkasset -c 3 -o $(dir $@) $@
 
 $(BUILD_DIR)/$(PROJECT_NAME).dfs: $(assets_conv)
 $(BUILD_DIR)/$(PROJECT_NAME).elf: $(src:%.cpp=$(BUILD_DIR)/%.o)
@@ -66,6 +67,9 @@ sc64_pal:
 	curl 192.168.0.6:9065/on
 
 clean:
+	rm -rf $(BUILD_DIR) *.z64 src/testList.h
+
+cleanAll:
 	rm -rf $(BUILD_DIR) *.z64 src/testList.h
 	rm -rf filesystem
 

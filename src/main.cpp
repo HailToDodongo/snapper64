@@ -5,6 +5,7 @@
 #include <libdragon.h>
 #include <utility>
 #include <vector>
+#include <algorithm>
 #include "renderer/text.h"
 #include "main.h"
 
@@ -121,10 +122,15 @@ int main()
   };
   #undef TEST_ENTRY
 
+  std::ranges::sort(tests, [](const TestGroup &a, const TestGroup &b) {
+    return a.getName() < b.getName();
+  });
+
   debug_init_isviewer();
   debug_init_usblog();
 
   dfs_init(DFS_DEFAULT_LOCATION);
+  asset_init_compression(3);
 
   joypad_init();
 

@@ -49,6 +49,7 @@ namespace
 
 Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
 {
+  auto t = get_ticks();
   ++hashAssert;
 
   std::string fileName{};
@@ -88,22 +89,39 @@ Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
       return *this;
     }
 
-    //dfs_open() @TODO: do load into to avoid "rom:/" prefix
     VI::keepAlive();
-    auto refData = (uint8_t*)asset_load(romPath.c_str(), &refDataSize);
+    auto t2 = get_ticks();
+    auto refData = (uint64_t*)asset_load(romPath.c_str(), &refDataSize);
+    t2 = get_ticks() - t2;
     VI::keepAlive();
 
-    /*assertf(refDataSize == surf.getByteSize(), "Incorrect reference data size: %d != %d",
-      refDataSize, surf.getByteSize());
-*/
-    auto buf = (uint8_t*)surf.get().buffer;
-    bool success = memcmp(buf, refData, surf.get().stride * surf.get().height) == 0;
+    auto t3 = get_ticks();
+    auto buf = (uint64_t*)surf.get().buffer;
+    auto buffSteps = surf.get().stride * surf.get().height / 8;
+    bool success = true;
+    for(uint32_t i=0; i < (uint32_t)buffSteps; ++i) {
+      if(buf[i] != refData[i]) {
+        success = false;
+        break;
+      }
+    }
+
+    t3 = get_ticks() - t3;
 
     free(refData);
 
     surf.lastTestSuccess = success;
     result(success);
-    debugf("[Debug] Surface-Test %s: %s\n", fileName.c_str(), success ? "Pass" : "FAIL!");
+
+    if(!success) {
+      debugf("[Debug] Surface-Test %s: FAILED!\n", fileName.c_str());
+    }
+/*
+    t = get_ticks() - t;
+    debugf("[DEBUG] assert time: %lu us\n", TICKS_TO_US(t));
+    debugf("[DEBUG]  - asset_load time: %lu us\n", TICKS_TO_US(t2));
+    debugf("[DEBUG]  - memcmp time: %lu us\n", TICKS_TO_US(t3));
+    */
   }
 
   return *this;

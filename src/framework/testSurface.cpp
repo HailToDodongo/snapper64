@@ -6,14 +6,45 @@
 
 #include "../main.h"
 #include "../renderer/text.h"
+#include "../utils/rsp.h"
+
+void TestSurface::attachAndClear(color_t clearColor)
+{
+  //uint64_t a = get_ticks();
+  name.clear();
+  lastTestSuccess = false;
+
+  uint64_t clearValue = color_to_packed32(clearColor);
+  clearValue = (clearValue << 32) | clearValue;
+
+  if((surface.flags & SURFACE_FLAGS_TEXFORMAT) == FMT_RGBA16)
+  {
+    assertf(false, "@TODO: handle RGBA16 surface");
+  }
+
+  RDP::DPL dpl{64};
+  dpl.add(RDP::attach(surface))
+    .add(RDP::syncFull())
+    .runAsync();
+
+  sys_hw_memset64(surface.buffer, clearValue, surface.stride * surface.height);
+
+  dpl.await();
+  //a = get_ticks() - a; debugf("t: %lu us\n", TICKS_TO_US(a));
+}
 
 void TestSurface::draw(int x, int y)
 {
-  char* dst = (char*)ctx.fb->buffer;
-  dst += ctx.fb->stride * y;
-  dst += x * 4;
+  assert(x % 2 == 0);
+
+  auto dst = (char*)ctx.fb->buffer;
+  dst += (ctx.fb->stride * y) + (x * 4);
+
+  auto src = (char*)get().buffer;
+
   for(int row=0; row < surface.height; ++row) {
-    memcpy(dst, (char*)surface.buffer + row * surface.stride, surface.width * 4);
+    RSP::dmaMemcpy(dst, src, surface.stride);
+    src += surface.stride;
     dst += ctx.fb->stride;
   }
 

@@ -391,7 +391,7 @@ namespace RDP
     return 0;
   }
 
-  inline std::vector<uint64_t> attachAndClear(const surface_t &surf)
+  inline std::vector<uint64_t> attach(const surface_t &surf)
   {
     uint32_t fmt = Format::RGBA;
     uint32_t bbp = BBP::_32;
@@ -399,15 +399,12 @@ namespace RDP
       bbp = BBP::_16;
     }
 
-    memset(surf.buffer, 0, surf.stride * surf.height);
-
     return {
       syncPipe(),
       setColorImage(surf.buffer, fmt, bbp, surf.stride/4),
       setScissor(0, 0, surf.width-1, surf.height-1),
       setOtherModes(OtherMode().cycleType(CYCLE::FILL)),
-      setFillColor({0, 0, 0, 0}),
-      // fillRect(0, 0, 320, 240)
+      setFillColor({0, 0, 0, 0})
     };
   }
 }

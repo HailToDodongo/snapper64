@@ -34,6 +34,7 @@ add_executable(rdp_test
         src/framework/assert.cpp
         tools/dataConverter.cpp
         src/tests/RDPRectTri.cpp
+        src/utils/rsp.h
 )
 
 set_property(TARGET rdp_test PROPERTY CXX_STANDARD 23)

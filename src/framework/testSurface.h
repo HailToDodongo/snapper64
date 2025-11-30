@@ -50,14 +50,7 @@ class TestSurface
       memset(surface.buffer, 0, getByteSize());
     }
 
-    void attachAndClear() {
-      name.clear();
-      lastTestSuccess = false;
-
-      RDP::DPL{64}
-        .add(RDP::attachAndClear(surface))
-        .runSync();
-    }
+    void attachAndClear(color_t clearColor = {0,0,0,0});
 
     void draw(int x, int y);
 

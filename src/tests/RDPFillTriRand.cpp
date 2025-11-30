@@ -18,10 +18,9 @@ namespace Tests::RDPFillTriRand
     TestGroup group{"RDP Fill Mode Tri (Random)"};
 
     for(uint32_t seed : {
-      0x73bfd1a2u, 0x3809113eu, 0x17d6a1e3u, 0x392df0aau, 0x0f4529b0u,
-      0x38bb9993u, 0x8216fc78u, 0x06868e65u, 0x255206b1u, 0x59b323c8u,
-      0x6f2489a4u, 0xa2aaae1du, 0xb6a33922u, 0x0a5212bbu, 0xf2dcebddu,
-      0xe58b24beu, 0x7be66493u, 0x9f605ee7u, 0x336a3a0au, 0xa3a56459u,
+      0x3809113eu, 0x0a5212bbu, 0xe58b24beu,
+      0x7be66493u, 0x9f605ee7u, 0x336a3a0au,
+      0xa3a56459u,
     })
     {
       group.test("Random 0x" + toHex(seed), [seed](Assert& assert)

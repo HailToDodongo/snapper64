@@ -69,9 +69,23 @@ int main(int argc, char* argv[]) {
             std::ofstream outfile(outPath, std::ios::binary);
             if (outfile) {
                 outfile.write(reinterpret_cast<const char*>(data.data()), data.size());
-                std::cout << "Wrote " << data.size() << " bytes to " << outPath << "\n";
+                printf("Wrote %zu bytes to %s\n", data.size(), outPath.c_str());
             }
             testName.clear();
+
+            // compress file with 7zip:
+            std::string zipCmd = "7z a -t7z -mx=9 \"" + outPath + ".7z\" \"" + outPath + "\" > nul";
+            int zipResult = system(zipCmd.c_str());
+            if (zipResult != 0) {
+                std::cerr << "Failed to compress " << outPath << "\n";
+            } else {
+              printf("Compressed to %s.7z\n", outPath.c_str());
+            }
+
+          // remove uncompressed file
+          if (std::remove(outPath.c_str()) != 0) {
+              std::cerr << "Failed to remove uncompressed file " << outPath << "\n";
+          }
         }
     }
     return 0;

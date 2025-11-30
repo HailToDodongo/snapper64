@@ -35,7 +35,7 @@ namespace Tests::RDPUndefShade1C
       {
         RNG::setSeed(i * 0x123);
         TestSurface surf{FMT_RGBA32, 128, 128};
-        surf.attachAndClear();
+        surf.attachAndClear({0x22, 0x22, 0x22, 0x00});
 
         std::array<RDP::Vertex, 3> vtx{};
         for(auto &v : vtx) {
