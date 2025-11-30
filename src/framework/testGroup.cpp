@@ -46,7 +46,11 @@ bool TestGroup::run()
     Text::setColor({0x99, 0x99, 0xFF});
     Text::print(16, 16+0, name.c_str());
     Text::setColor();
-    Text::printf(16, 16+8, "%03d/%03d: %s", i, entries.size(), entry.name.c_str());
+    if(entries.size() < 100) {
+      Text::printf(16, 16+8, "%02d/%02d: %s", i+1, entries.size(), entry.name.c_str());
+    } else {
+      Text::printf(16, 16+8, "%03d/%03d: %s", i+1, entries.size(), entry.name.c_str());
+    }
     //Text::printf(16, 16+16, "UUID: %08X_%08X", nameHash, entry.nameHash);
 
     if(forceDisplay)VI::show();
@@ -62,6 +66,8 @@ bool TestGroup::run()
       wait_ms(500);
     }
   }
+
+  if(forceDisplay)wait_ms(20);
 
   return true;
 }
