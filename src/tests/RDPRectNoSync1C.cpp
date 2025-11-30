@@ -7,7 +7,6 @@
 #include "../renderer/dpl.h"
 #include "../framework/testGroup.h"
 #include "../framework/testSurface.h"
-#include "../utils/vecMath.h"
 
 namespace
 {

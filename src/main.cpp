@@ -11,6 +11,8 @@
 
 #include "framework/testGroup.h"
 
+typedef TestGroup (*TestCreateFunc)();
+
 #define TEST_ENTRY(X) namespace Tests::X { TestGroup create(); }
 #include "testList.h"
 #include "renderer/vi.h"
@@ -46,14 +48,21 @@ namespace {
     uint32_t *buff = (uint32_t*)ctx.fb->buffer;
     int offset = frame / 4;
 
-    for(int y=0; y<ctx.fb->height; ++y) {
+    for(int y=0; y<ctx.fb->height; ++y)
+    {
+      if(y > ctx.fb->height-32) {
+        sys_hw_memset64(buff, 0, ctx.fb->stride);
+        buff += ctx.fb->stride/4;
+        continue;
+      }
+
       for(int x=0; x<ctx.fb->width; ++x) {
         bool isEven = (((x+offset) / 16) + ((y+offset) / 16)) % 2 == 0;
         if(y < 30 || y > (int)(40 + (tests.size()+1) * 10))
         {
           *buff++ = isEven
-            ? color_to_packed32(color_t{0x44, 0x22, 0x33})
-            : color_to_packed32(color_t{0x22, 0x11, 0x11});
+            ? color_to_packed32(color_t{0x33, 0x33, 0x33})
+            : color_to_packed32(color_t{0x22, 0x22, 0x22});
         } else {
           *buff++ = isEven ? color_to_packed32(color_t{0x11, 0x11, 0x11}) : 0;
         }
@@ -88,10 +97,23 @@ namespace {
 
     int posY = 160;
     Text::print(20, posY, "Asserts:"); posY += 8;
-    Text::setColor({0x33, 0xFF, 0x33});
-    Text::printf(40, posY, "Passed: %d", ctx.countAssertPassed); posY += 8;
-    Text::setColor({0xFF, 0x33, 0x33});
-    Text::printf(40, posY, "Failed: %d", ctx.countAssertFailed); posY += 10;
+    if(ctx.countAssertPassed == 0)
+    {
+      Text::setColor({0xAA, 0xAA, 0xAA});
+      Text::print(40, posY, "Passed: -");
+    } else {
+      Text::setColor({0x33, 0xFF, 0x33});
+      Text::printf(40, posY, "Passed: %d", ctx.countAssertPassed);
+    }
+    posY += 8;
+
+    if(ctx.countAssertFailed == 0) {
+      Text::setColor({0xAA, 0xAA, 0xAA});
+      Text::print(40, posY, "Failed: -");
+    } else {
+      Text::setColor({0xFF, 0x33, 0x33});
+      Text::printf(40, posY, "Failed: %d", ctx.countAssertFailed);
+    }
     Text::setColor();
 
     posY = 200;
@@ -146,22 +168,6 @@ int main()
   });
 
   frame = 0;
-
-  /*tests.push_back(TestGroup{"Some Test 3"}
-    .test("a", [](Assert& assert)
-    {
-      assert.equals(1, 3);
-      Text::print(64, 64, "###### B");
-    })
-  );
-  tests.push_back(TestGroup{"Some Test 4"}
-    .test("a", [](Assert& assert)
-    {
-      assert.equals(1, 3);
-      Text::print(64, 64, "###### C");
-    })
-  );*/
-
   for(;;) 
   {
     ++frame;

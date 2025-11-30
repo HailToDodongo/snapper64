@@ -170,6 +170,9 @@ namespace RDP
       constexpr OtherMode& setAA(bool enable) {
         value |= bitVal(enable ? 1 : 0, 3, 3); return *this;
       }
+      constexpr OtherMode& setAAMode(uint32_t mode) {
+        value |= bitVal(mode, 9, 8); return *this;
+      }
       constexpr OtherMode& forceBlend(uint32_t mode) {
         value |= bitVal(mode, 14, 14); return *this;
       }

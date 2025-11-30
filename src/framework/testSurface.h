@@ -52,7 +52,7 @@ class TestSurface
 
     void attachAndClear(color_t clearColor = {0,0,0,0});
 
-    void draw(int x, int y);
+    void draw(int x, int y, bool showAA = false);
 
     [[nodiscard]] const surface_t& get() const {
       return surface;

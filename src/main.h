@@ -6,6 +6,9 @@
 #include <libdragon.h>
 #include <string>
 
+#define DEG_TO_RAD 0.01745329252L
+#define RAD_TO_DEG 57.295779512896175L
+
 namespace {
   constexpr uint32_t SCREEN_WIDTH = 320;
   constexpr uint32_t SCREEN_HEIGHT = 240;
@@ -21,6 +24,11 @@ namespace {
     sprintf(buf, "%016llX", val);
     return std::string{buf};
   }
+
+  constexpr float operator "" _deg(long double x) { return static_cast<float>(x * DEG_TO_RAD); }
+  constexpr float operator "" _rad(long double x) { return static_cast<float>(x); }
+
+  constexpr float toRad(float deg) { return deg * DEG_TO_RAD; }
 }
 
 struct Context

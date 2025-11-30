@@ -33,7 +33,7 @@ void TestSurface::attachAndClear(color_t clearColor)
   //a = get_ticks() - a; debugf("t: %lu us\n", TICKS_TO_US(a));
 }
 
-void TestSurface::draw(int x, int y)
+void TestSurface::draw(int x, int y, bool showAA)
 {
   assert(x % 2 == 0);
 
@@ -43,7 +43,15 @@ void TestSurface::draw(int x, int y)
   auto src = (char*)get().buffer;
 
   for(int row=0; row < surface.height; ++row) {
-    RSP::dmaMemcpy(dst, src, surface.stride);
+    if(showAA)
+    {
+      for(int col=0; col < surface.width; ++col) {
+        uint8_t cvg = *((uint32_t*)src + col) & 0xFF;
+        *((uint32_t*)dst + col) = color_to_packed32({cvg, cvg, cvg, 0xFF});
+      }
+    } else {
+      RSP::dmaMemcpy(dst, src, surface.stride);
+    }
     src += surface.stride;
     dst += ctx.fb->stride;
   }
