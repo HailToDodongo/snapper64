@@ -39,7 +39,7 @@ bool TestGroup::run()
     auto t = get_ticks();
     entry.func(assert);
     t = get_ticks() - t;
-    debugf("[Debug] Test %ld us\n", TICKS_TO_US(t));
+    //debugf("[Debug] Test %ld us\n", TICKS_TO_US(t));
 
     ctx.dumpData = oldDump;
 

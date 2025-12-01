@@ -40,7 +40,7 @@ namespace {
   constinit int nextDemo = -1;
 
   uint32_t frame = 0;
-  uint32_t nextDemoSel = 0;
+  int nextDemoSel = -1;
 
   void demoMenuDraw()
   {
@@ -50,7 +50,7 @@ namespace {
 
     for(int y=0; y<ctx.fb->height; ++y)
     {
-      if(y > ctx.fb->height-32) {
+      if(y > ctx.fb->height-40) {
         sys_hw_memset64(buff, 0, ctx.fb->stride);
         buff += ctx.fb->stride/4;
         continue;
@@ -74,55 +74,71 @@ namespace {
     auto press = joypad_get_buttons_pressed(JOYPAD_PORT_1);
     if(press.d_up || press.c_up)--nextDemoSel;
     if(press.d_down || press.c_down)++nextDemoSel;
-    if(nextDemoSel == 0)nextDemoSel = tests.size();
-    if(nextDemoSel >= tests.size())nextDemoSel = 0;
+    if(nextDemoSel < -1)nextDemoSel = tests.size()-1;
+    if(nextDemoSel >= (int)tests.size())nextDemoSel = -1;
 
-    if(held.a || held.b || press.start) {
-      nextDemo = nextDemoSel;
+    if(held.a || held.b) {
+      nextDemo = nextDemoSel < 0 ? 0 : nextDemoSel;
       ctx.dumpData = held.b;
-      ctx.autoAdvance = press.start;
+      ctx.autoAdvance = nextDemoSel < 0;
       ctx.reset();
     }
 
     constexpr color_t colSel{0x66, 0x66, 0xFF};
 
-    for(uint32_t i = 0; i < tests.size(); ++i) {
+    int posY = 36;
+    Text::setColor(nextDemoSel < 0 ? colSel : color_t{0xFF, 0xFF, 0xFF});
+    Text::print(40, posY, "-Run All-"); posY += 10;
+
+    for(int i = 0; i < (int)tests.size(); ++i) {
       Text::setColor(i == nextDemoSel ? colSel : color_t{0xFF, 0xFF, 0xFF});
-      Text::print(40, 36 + i * 10, tests[i].getName().c_str());
+      Text::print(40, posY, tests[i].getName().c_str());
+      posY += 10;
     }
 
     Text::setColor(colSel);
-    Text::print(28, 36 + nextDemoSel * 10 - 1, ">");
+    Text::print(28, 36 + (nextDemoSel+1) * 10 - 1, ">");
     Text::setColor();
 
-    int posY = 160;
-    Text::print(20, posY, "Asserts:"); posY += 8;
+    posY = 160;
+    Text::print(30, posY, "Asserts:"); posY += 8;
     if(ctx.countAssertPassed == 0)
     {
       Text::setColor({0xAA, 0xAA, 0xAA});
-      Text::print(40, posY, "Passed: -");
+      Text::print(30, posY, "Passed: -");
     } else {
       Text::setColor({0x33, 0xFF, 0x33});
-      Text::printf(40, posY, "Passed: %d", ctx.countAssertPassed);
+      Text::printf(30, posY, "Passed: %d", ctx.countAssertPassed);
     }
     posY += 8;
 
     if(ctx.countAssertFailed == 0) {
       Text::setColor({0xAA, 0xAA, 0xAA});
-      Text::print(40, posY, "Failed: -");
+      Text::print(30, posY, "Failed: -");
     } else {
       Text::setColor({0xFF, 0x33, 0x33});
-      Text::printf(40, posY, "Failed: %d", ctx.countAssertFailed);
+      Text::printf(30, posY, "Failed: %d", ctx.countAssertFailed);
     }
     Text::setColor();
 
-    posY = 200;
+    posY = 160;
+    int posX = 180;
+    Text::print(posX, posY, "   Select"); posY += 8;
+    Text::print(posX, posY, "   Run Test"); posY += 8;
+    Text::print(posX, posY, "   Dump Test"); posY += 8;
+    posY = 160;
+    Text::setColor({0xff, 0xd7, 0x36});
+    Text::print(posX, posY, "C:"); posY += 8;
+    Text::setColor({0x66, 0x66, 0xFF});
+    Text::print(posX, posY, "A:"); posY += 8;
+    Text::setColor({0x33, 0xFF, 0x33});
+    Text::print(posX, posY, "B:"); posY += 8;
 
-    Text::setColor({0xBB, 0xBB, 0xBB});
-    //Text::print(20, posY, "Repo:");
-    posY += 9;
-    Text::setColor({0x66, 0xFF, 0x33});
-    //Text::print(20, posY, "github.com/HailToDodongo/repeater64");
+
+    posY = 208;
+
+    Text::setColor({0xAA, 0xFF, 0xAA});
+    Text::print(20, posY, "Repo: <WIP>");
     posY += 10;
     Text::setColor({0x77, 0x77, 0x99});
     Text::print(20, posY, "(C) 2025 Max Beboek (HailToDodongo)"); posY += 10;
@@ -162,9 +178,9 @@ int main()
   assertf(get_tv_type() == TV_NTSC, "Please run ROM in NTSC mode!");
 
   VI::setFrameBuffers({
-    surface_make((char*)0xA0300000, FMT_RGBA32, 320, 240, 320*4),
-    surface_make((char*)0xA0380000, FMT_RGBA32, 320, 240, 320*4),
-    surface_make((char*)0xA0400000, FMT_RGBA32, 320, 240, 320*4),
+    surface_make((char*)0xA0300000, FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
+    surface_make((char*)0xA0380000, FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
+    surface_make((char*)0xA0400000, FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
   });
 
   frame = 0;
@@ -181,7 +197,7 @@ int main()
       demoMenuDraw();
     } else {
       memset(ctx.fb->buffer, 0x33, ctx.fb->height * ctx.fb->stride);
-      if(!tests[nextDemo].run())
+      if(!tests[nextDemo].run() || !ctx.autoAdvance)
       {
         nextDemo = -1;
       } else if (ctx.autoAdvance) {
