@@ -28,8 +28,8 @@ namespace
 
   fm_vec2_t circlePos(float angle, float radius, fm_vec2_t center) {
     return center + fm_vec2_t{
-      fm_cosf(angle) * radius,
-      fm_sinf(angle) * radius
+      Math::cosf(angle) * radius,
+      Math::sinf(angle) * radius
     };
   }
 }

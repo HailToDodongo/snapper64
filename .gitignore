@@ -1,4 +1,5 @@
 filesystem/
+pack_data/
 build/
 *.z64
 cmake*/

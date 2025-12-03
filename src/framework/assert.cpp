@@ -3,6 +3,8 @@
 * @license MIT
 */
 #include "assert.h"
+
+#include "testPack.h"
 #include "../renderer/vi.h"
 
 namespace
@@ -62,38 +64,58 @@ Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
 
   if(ctx.dumpData)
   {
-    debugf("$FILE=%s\n", fileName.c_str());
-    uint8_t *buf = (uint8_t*)surf.get().buffer;
-    uint32_t byteSize = surf.get().stride * surf.get().height;
+    if(ctx.useSdCard)
+    {
+      std::string sdPath = "sd:/tests/" + fileName;
+      debugf("[DEBUG] Dumping test surface to %s\n", sdPath.c_str());
+      FILE *f = fopen(sdPath.c_str(), "wb");
+      if(!f) {
+        debugf("[DEBUG] Failed to open file for writing: %s\n", sdPath.c_str());
+        result(false);
+        surf.lastTestSuccess = false;
+        return *this;
+      }
 
-    std::vector<char> hexBuf{};
-    hexBuf.resize(byteSize * 2 + 2);
+      VI::keepAlive();
 
-    VI::keepAlive();
-    base64Encode(hexBuf.data(), buf, byteSize);
-    VI::keepAlive();
+      fwrite(surf.get().buffer, 1, surf.getByteSize(), f);
+      fclose(f);
 
-    fputs("$DATA=", stderr);
-    fputs(hexBuf.data(), stderr);
+      VI::keepAlive();
+    } else
+    {
+      debugf("$FILE=%s\n", fileName.c_str());
+      uint8_t *buf = (uint8_t*)surf.get().buffer;
+      uint32_t byteSize = surf.get().stride * surf.get().height;
+
+      std::vector<char> hexBuf{};
+      hexBuf.resize(byteSize * 2 + 2);
+
+      VI::keepAlive();
+      base64Encode(hexBuf.data(), buf, byteSize);
+      VI::keepAlive();
+
+      fputs("$DATA=", stderr);
+      fputs(hexBuf.data(), stderr);
+    }
 
     result(false); // avoid false-positives in dumping mode
     surf.lastTestSuccess = false;
   } else
   {
-    int refDataSize{};
+    VI::keepAlive();
+    auto t2 = get_ticks();
+    //auto refData = (uint64_t*)asset_load(romPath.c_str(), &refDataSize);
+    auto refData = (uint64_t*)TestPack::load(hashGroup, hashTest, hashAssert);
+    t2 = get_ticks() - t2;
+    VI::keepAlive();
 
-    if(dfs_rom_addr(fileName.c_str()) == 0) {
+    if(!refData) {
       debugf("[DEBUG] Test file not found: %s\n", fileName.c_str());
       result(false);
       surf.lastTestSuccess = false;
       return *this;
     }
-
-    VI::keepAlive();
-    auto t2 = get_ticks();
-    auto refData = (uint64_t*)asset_load(romPath.c_str(), &refDataSize);
-    t2 = get_ticks() - t2;
-    VI::keepAlive();
 
     auto t3 = get_ticks();
     auto buf = (uint64_t*)surf.get().buffer;
@@ -102,8 +124,10 @@ Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
     for(uint32_t i=0; i < (uint32_t)buffSteps; ++i) {
       if(buf[i] != refData[i]) {
         success = false;
+        //refData[i] = 0xFF0000FF'FF0000FF;
         break;
       }
+      //buf[i] = refData[i];
     }
 
     t3 = get_ticks() - t3;

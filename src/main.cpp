@@ -10,6 +10,7 @@
 #include "main.h"
 
 #include "framework/testGroup.h"
+#include "framework/testPack.h"
 
 typedef TestGroup (*TestCreateFunc)();
 
@@ -84,6 +85,10 @@ namespace {
       ctx.reset();
     }
 
+    if(press.r && ctx.hasSdCard) {
+      ctx.useSdCard = !ctx.useSdCard;
+    }
+
     constexpr color_t colSel{0x66, 0x66, 0xFF};
 
     int posY = 36;
@@ -126,6 +131,14 @@ namespace {
     Text::print(posX, posY, "   Select"); posY += 8;
     Text::print(posX, posY, "   Run Test"); posY += 8;
     Text::print(posX, posY, "   Dump Test"); posY += 8;
+
+    if(ctx.hasSdCard)
+    {
+      Text::print(posX, posY, ctx.useSdCard ? "R: (SD-Card)" : "R: (Logging)");
+    } else {
+      Text::print(posX, posY, "   (Logging)");
+    }
+
     posY = 160;
     Text::setColor({0xff, 0xd7, 0x36});
     Text::print(posX, posY, "C:"); posY += 8;
@@ -133,7 +146,6 @@ namespace {
     Text::print(posX, posY, "A:"); posY += 8;
     Text::setColor({0x33, 0xFF, 0x33});
     Text::print(posX, posY, "B:"); posY += 8;
-
 
     posY = 208;
 
@@ -173,6 +185,10 @@ int main()
 
   joypad_init();
 
+  ctx.hasSdCard = debug_init_sdfs("sd:/", -1);
+  ctx.useSdCard = ctx.hasSdCard;
+
+  TestPack::init();
   VI::init();
 
   assertf(get_tv_type() == TV_NTSC, "Please run ROM in NTSC mode!");

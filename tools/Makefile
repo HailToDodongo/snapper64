@@ -1,15 +1,16 @@
-CXXFLAGS += -O3 -std=c++20
+CXXFLAGS += -O3 -std=c++23
 OBJDIR = build
 
-OBJ = build/dataConverter.o
-
-all: data_converter
+all: data_converter data_bundler
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-data_converter: $(OBJ)
+data_converter: build/dataConverter.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $ $(LINKFLAGS)
+
+data_bundler: build/dataBundler.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $ $(LINKFLAGS)
 
 clean:

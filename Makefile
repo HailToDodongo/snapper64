@@ -14,7 +14,8 @@ src += $(wildcard src/utils/*.cpp)
 assets_png = $(wildcard assets/*.rgba16.png)
 assets_test = $(wildcard assets/*.test.7z)
 assets_conv = $(patsubst assets/%,filesystem/%,$(assets_png:%.png=%.sprite))
-assets_conv += $(patsubst assets/%,filesystem/%,$(assets_test:%.test.7z=%.test))
+# assets_conv += $(patsubst assets/%,filesystem/%,$(assets_test:%.test.7z=%.test))
+test_dumps = $(assets_test:assets/%.test.7z=pack_data/%.test)
 
 all: $(PROJECT_NAME).z64
 
@@ -34,14 +35,28 @@ filesystem/%.sprite: assets/%.png
 	@echo "    [SPRITE] $@"
 	$(N64_MKSPRITE) $(MKSPRITE_FLAGS) -o $(dir $@) "$<"
 
-filesystem/%.test: assets/%.test.7z
+pack_data/%.test: assets/%.test.7z
 	@mkdir -p $(dir $@)
 	@echo "    [TEST-DUMP] $@ $<"
 	# cp "$<" $@
 	7z e "$<" -o$(dir $@) -y -bso0 -bsp0
 	$(N64_BINDIR)/mkasset -c 3 -o $(dir $@) $@
 
-$(BUILD_DIR)/$(PROJECT_NAME).dfs: $(assets_conv)
+filesystem/tests.pack: tools/data_converter tools/data_bundler
+
+filesystem/tests.pack: $(test_dumps)
+	@mkdir -p $(dir $@)
+	@echo "    [PACK] $@"
+	tools/data_bundler pack_data filesystem/tests.pack
+
+# PC side tools
+tools/data_converter: tools/dataConverter.cpp
+	make -C tools
+
+tools/data_bundler: tools/dataBundler.cpp
+	make -C tools
+
+$(BUILD_DIR)/$(PROJECT_NAME).dfs: $(assets_conv) filesystem/tests.pack
 $(BUILD_DIR)/$(PROJECT_NAME).elf: $(src:%.cpp=$(BUILD_DIR)/%.o)
 
 $(PROJECT_NAME).z64: N64_ROM_TITLE="Repeat64"
@@ -56,7 +71,8 @@ sc64:
 	make -j8
 	curl 192.168.0.6:9065/off
 	sleep 1
-	sc64deployer --remote 192.168.0.6:9064 upload --tv ntsc *.z64
+# sc64deployer --remote 192.168.0.6:9064 upload --tv ntsc *.z64
+	sc64deployer upload --tv ntsc *.z64
 	curl 192.168.0.6:9065/on
 
 sc64_pal:
@@ -74,8 +90,8 @@ cleanAll:
 	rm -rf filesystem
 
 cleanDumps:
-	rm -rf assets/*.test
 	rm -rf filesystem/*.test
+	rm -rf pack_data/*.test
 
 -include $(wildcard $(BUILD_DIR)/*.d)
 

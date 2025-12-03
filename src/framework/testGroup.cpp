@@ -61,7 +61,11 @@ bool TestGroup::run()
       // @TODO: abort logic
       return false;
     }
-
+/*
+    heap_stats_t h{};
+    sys_get_heap_stats(&h);
+    debugf("Used: %u bytes \n",h.used);
+*/
     if(held.z) {
       wait_ms(500);
     }

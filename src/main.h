@@ -39,6 +39,8 @@ struct Context
   int countAssertFailed = 0;
 
   // if set, dumps data (e.g. framebuffer) to create reference files
+  bool hasSdCard{};
+  bool useSdCard{false};
   bool dumpData{};
   bool autoAdvance{};
 
