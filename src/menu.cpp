@@ -52,7 +52,7 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
   if(nextDemoSel >= (int)tests.size())nextDemoSel = -1;
 
   if(held.a || held.b) {
-    ctx.nextDemo = nextDemoSel < 0 ? 0 : nextDemoSel;
+    ctx.nextTest = nextDemoSel < 0 ? 0 : nextDemoSel;
     ctx.dumpData = held.b;
     ctx.autoAdvance = nextDemoSel < 0;
     ctx.reset();
@@ -137,10 +137,10 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
   Text::print(posX, posY, "   Run Test"); posY += 8;
   Text::print(posX, posY, "   Dump Test"); posY += 8;
 
-  if(ctx.hasSdCard)
-  {
-    Text::print(posX, posY, ctx.useSdCard ? "R: (SD-Card)" : "R: (Logging)");
+  if(ctx.hasSdCard) {
+    Text::print(posX, posY, ctx.useSdCard ? "R: SD-Card" : "R: Logging"); posY += 8;
   }
+  Text::print(posX, posY, "   Stop Test"); posY += 8;
 
   posY = 160;
   Text::setColor({0xff, 0xd7, 0x36});
@@ -149,19 +149,27 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
   Text::print(posX, posY, "A:"); posY += 8;
   Text::setColor({0x33, 0xFF, 0x33});
   Text::print(posX, posY, "B:"); posY += 8;
+  if(ctx.hasSdCard)posY += 8;
+  Text::setColor({0xFF, 0x44, 0x44});
+  Text::print(posX, posY, "S:"); posY += 8;
+  Text::setColor();
 
   posY = 208;
 
   Text::setColor({0xAA, 0xFF, 0xAA});
-  Text::print(20, posY, "Repo: <WIP>");
+  Text::print(20, posY, "github.com/HailToDodongo/snapper64");
   posY += 10;
   Text::setColor({0x77, 0x77, 0x99});
-  Text::print(20, posY, "(C) 2025 Max Beboek (HailToDodongo)"); posY += 10;
-  Text::setColor();
+  Text::print(20 + 16*4, posY, "(C) 2025 Max Bebok");
 
-  //Text::printSmall(128, 128, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-  //Text::printSmall(128, 128+8, "abcdefghijklmnopqrstuvwxyz");
-  //Text::printSmall(128, 128+16, "0123456789_");
+  // actually "Bebök", too lazy to make my own name work so just set ü-dots manually here
+  uint32_t* buf = (uint32_t*)ctx.fb->buffer;
+  buf[(posY+0) * (ctx.fb->stride / 4) + (214) ] = 0x77779900;
+  buf[(posY+1) * (ctx.fb->stride / 4) + (214) ] = 0x77779900;
+  buf[(posY+0) * (ctx.fb->stride / 4) + (214+2) ] = 0x77779900;
+  buf[(posY+1) * (ctx.fb->stride / 4) + (214+2) ] = 0x77779900;
+
+  Text::setColor();
 
   Text::setSpaceHidden(true);
 
@@ -171,13 +179,17 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
 
 /*void testText() {
   int posY = 32;
-  for(int i=0; i<4; ++i) {
-    Text::print(16, posY, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"); posY += 8;
-    Text::print(16, posY, "abcdefghijklmnopqrstuvwxyz"); posY += 8;
-    Text::print(16, posY, "0123456789"); posY += 8;
-    Text::print(16, posY, "!@#$%^&*()-_=+[]{};:"); posY += 8;
-    Text::print(16, posY, "'\",.<>/?\\|`~"); posY += 8;
-    posY += 8;
+  Text::print(16, posY, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"); posY += 8;
+  Text::print(16, posY, "abcdefghijklmnopqrstuvwxyz"); posY += 8;
+  Text::print(16, posY, "0123456789"); posY += 8;
+  Text::print(16, posY, "!@#$%^&*()-_=+[]{};:"); posY += 8;
+  Text::print(16, posY, "'\",.<>/?\\|`~"); posY += 8;
+
+  Text::printSmall(128, 128, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  Text::printSmall(128, 128+8, "abcdefghijklmnopqrstuvwxyz");
+  Text::printSmall(128, 128+16, "0123456789_");
+
+  posY += 8;
   }
 }*/
 

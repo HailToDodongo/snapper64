@@ -18,12 +18,16 @@ typedef TestGroup (*TestCreateFunc)();
 #include "renderer/vi.h"
 #undef TEST_ENTRY
 
+constexpr fm_vec3_t UP_VECTOR{0, 1, 0};
+constexpr fm_vec3_t GRAVITY = -UP_VECTOR * 9.81f;
+
 constinit Context ctx{};
 
 extern void demoMenuInit();
 extern void demoMenuDraw(const std::vector<TestGroup> &tests);
 
 namespace {
+  constexpr int TEST_IDX_MENU = -1;
   constinit std::vector<TestGroup> tests{};
 }
 
@@ -38,13 +42,7 @@ int main()
 
   joypad_init();
 
-  ctx.hasSdCard = debug_init_sdfs("sd:/", -1);
-  ctx.useSdCard = ctx.hasSdCard;
-
-  TestPack::init();
   VI::init();
-
-  assertf(get_tv_type() == TV_NTSC, "Please run ROM in NTSC mode!");
 
   VI::setFrameBuffers({
     surface_make((char*)0xA0300000, FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
@@ -52,9 +50,13 @@ int main()
     surface_make((char*)0xA0400000, FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
   });
 
-  Text::print(32, 32, "Loading...");
-
+  Text::print(SCREEN_WIDTH/2 - 7*4, SCREEN_HEIGHT/2 - 8, "Loading");
   VI::show();
+
+  ctx.hasSdCard = debug_init_sdfs("sd:/", -1);
+  ctx.useSdCard = ctx.hasSdCard;
+
+  TestPack::init();
 
   #define TEST_ENTRY(X) Tests::X::create(),
   tests = {
@@ -67,6 +69,8 @@ int main()
   });
 
   ctx.frame = 0;
+  ctx.nextTest = TEST_IDX_MENU;
+
   for(;;) 
   {
     ++ctx.frame;
@@ -76,16 +80,16 @@ int main()
     Text::setColor();
     Text::setSpaceHidden(false);
 
-    if(ctx.nextDemo < 0) {
+    if(ctx.nextTest == TEST_IDX_MENU) {
       demoMenuDraw(tests);
     } else {
-      if(!tests[ctx.nextDemo].run() || !ctx.autoAdvance)
+      if(!tests[ctx.nextTest].run() || !ctx.autoAdvance)
       {
-        ctx.nextDemo = -1;
+        ctx.nextTest = TEST_IDX_MENU;
       } else if (ctx.autoAdvance) {
-        ++ctx.nextDemo;
-        if(ctx.nextDemo >= (int)tests.size()) {
-          ctx.nextDemo = -1;
+        ++ctx.nextTest;
+        if(ctx.nextTest >= (int)tests.size()) {
+          ctx.nextTest = TEST_IDX_MENU;
         }
       }
 

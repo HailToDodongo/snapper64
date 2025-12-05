@@ -36,8 +36,8 @@ struct Context
 {
   surface_t *fb{};
 
-  int nextDemo{-1};
-  uint32_t frame{0};
+  int nextTest{};
+  uint32_t frame{};
 
   // if set, dumps data (e.g. framebuffer) to create reference files
   bool hasSdCard{};

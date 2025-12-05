@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(rdp_test)
+project(snapper64)
 
 set(CMAKE_C_COMPILER gcc)
 set(CMAKE_CXX_COMPILER g++)
@@ -11,7 +11,7 @@ include_directories(../libdragon/include)
 
 include_directories(src)
 
-add_executable(rdp_test
+add_executable(snapper64
         src/main.cpp
         src/renderer/text.cpp
         src/utils/miMemory.cpp
@@ -40,6 +40,8 @@ add_executable(rdp_test
         src/framework/testPack.cpp
         src/utils/vecMath.cpp
         src/menu.cpp
+        src/renderer/draw.h
+        src/renderer/draw.cpp
 )
 
-set_property(TARGET rdp_test PROPERTY CXX_STANDARD 23)
+set_property(TARGET snapper64 PROPERTY CXX_STANDARD 23)
