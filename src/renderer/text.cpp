@@ -12,6 +12,7 @@ namespace {
 
   constinit uint32_t currColor = 0xFFFFFF00;
   constinit uint8_t ignoreChar = 0;
+  constinit bool alignLeft = true;
 
   #include "font.h"
   #include "font3x5.h"
@@ -27,7 +28,21 @@ void Text::setColor(color_t color)
   currColor = color_to_packed32(color);
 }
 
+void Text::setAlignLeft() {
+  alignLeft = true;
+}
+
+void Text::setAlignRight() {
+  alignLeft = false;
+}
+
 int Text::print(int x, int y, const char *str) {
+  if(!alignLeft)
+  {
+    int textLen = strlen(str);
+    x -= textLen * 8;
+  }
+
   auto fbBuff = (uint8_t*)ctx.fb->buffer;
 
   uint64_t *buffStart = (uint64_t*)&fbBuff[y * ctx.fb->stride + x*4];

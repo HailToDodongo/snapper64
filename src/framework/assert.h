@@ -14,12 +14,15 @@ struct Assert
   uint32_t hashTest{0};
   uint32_t hashAssert{0};
 
+  uint32_t successCount{0};
+  uint32_t errorCount{0};
+
   void result(bool isOk)
   {
     if(isOk) {
-      ++ctx.countAssertPassed;
+      ++successCount;
     } else {
-      ++ctx.countAssertFailed;
+      ++errorCount;
     }
   }
 

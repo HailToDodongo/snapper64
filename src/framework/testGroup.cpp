@@ -19,6 +19,9 @@ bool TestGroup::run()
 
   Text::setColor();
 
+  countTested = 0;
+  countSuccess = 0;
+
   for(uint32_t i=0; i<entries.size(); ++i)
   {
     Assert assert{};
@@ -39,6 +42,12 @@ bool TestGroup::run()
     auto t = get_ticks();
     entry.func(assert);
     t = get_ticks() - t;
+
+    entry.errorCount += assert.errorCount;
+
+    ++countTested;
+    countSuccess += (assert.errorCount == 0) ? 1 : 0;
+
     //debugf("[Debug] Test %ld us\n", TICKS_TO_US(t));
 
     ctx.dumpData = oldDump;

@@ -103,4 +103,5 @@ void VI::keepAlive()
 void VI::setFrameBuffers(std::array<surface_t, 3> fb)
 {
   fbs = fb;
+  ctx.fb = &fbs[0];
 }

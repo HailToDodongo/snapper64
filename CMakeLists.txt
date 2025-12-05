@@ -39,6 +39,7 @@ add_executable(rdp_test
         src/framework/testPack.h
         src/framework/testPack.cpp
         src/utils/vecMath.cpp
+        src/menu.cpp
 )
 
 set_property(TARGET rdp_test PROPERTY CXX_STANDARD 23)

@@ -1,0 +1,183 @@
+/**
+* @copyright 2025 - Max Bebök
+* @license MIT
+*/
+#include <libdragon.h>
+#include <vector>
+
+#include "main.h"
+#include "framework/testGroup.h"
+#include "renderer/text.h"
+
+namespace
+{
+  constexpr int posStartY = 24;
+
+  constexpr color_t COL_SELECT{0x66, 0x66, 0xFF};
+
+  void drawBG(uint32_t testCount)
+  {
+    auto buff = (uint32_t*)ctx.fb->buffer;
+    int offset = ctx.frame / 4;
+    sys_hw_memset64(buff, 0, ctx.fb->stride * ctx.fb->height);
+  }
+
+  void drawLineH(int posX, int posY, int endX)
+  {
+    for(int x=posX; x < endX; ++x) {
+      *((uint32_t*)ctx.fb->buffer + posY * (ctx.fb->stride / 4) + x) = 0x88888800;
+    }
+  }
+
+  constinit int tab = 0;
+  constinit int nextDemoSel = -1;
+  constinit sprite_t *icons{};
+}
+
+void demoMenuInit()
+{
+  icons = sprite_load("rom:/");
+}
+
+void demoMenuDraw(const std::vector<TestGroup> &tests)
+{
+  auto held = joypad_get_buttons_held(JOYPAD_PORT_1);
+  auto press = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+
+  drawBG(tests.size());
+
+  if(press.d_up || press.c_up)--nextDemoSel;
+  if(press.d_down || press.c_down)++nextDemoSel;
+  if(nextDemoSel < -1)nextDemoSel = tests.size()-1;
+  if(nextDemoSel >= (int)tests.size())nextDemoSel = -1;
+
+  if(held.a || held.b) {
+    ctx.nextDemo = nextDemoSel < 0 ? 0 : nextDemoSel;
+    ctx.dumpData = held.b;
+    ctx.autoAdvance = nextDemoSel < 0;
+    ctx.reset();
+  }
+
+  if(press.r && ctx.hasSdCard) {
+    ctx.useSdCard = !ctx.useSdCard;
+  }
+
+  int posX = 24;
+  int resPosX = SCREEN_WIDTH - 14;
+  int posY = posStartY;
+
+  Text::setColor(nextDemoSel < 0 ? COL_SELECT : color_t{0xFF, 0xFF, 0xFF});
+  Text::print(posX, posY, "Run All");
+
+  Text::setAlignRight();
+  Text::setColor({0x99, 0x99, 0x99});
+  Text::print(resPosX, posY, "Results");
+  Text::setAlignLeft();
+  posY += 10;
+  drawLineH(posX, posY, SCREEN_WIDTH-14);
+  posY += 2;
+
+  uint32_t totalPassed = 0;
+  uint32_t totalFailed = 0;
+
+  for(int i = 0; i < (int)tests.size(); ++i)
+  {
+    auto &group = tests[i];
+    uint32_t success = group.getCountSuccess();
+    uint32_t total = group.getCountTested();
+
+    Text::setColor(i == nextDemoSel ? COL_SELECT : color_t{0xFF, 0xFF, 0xFF});
+    Text::print(posX, posY, group.getName().c_str());
+
+    Text::setAlignRight();
+    if(group.getTestCount() != total)
+    {
+      Text::setColor({0x99, 0x99, 0x99});
+      Text::printf(resPosX, posY, "---/---", success, total);
+    } else {
+
+      totalPassed += success;
+      totalFailed += (total - success);
+
+      if(success == total)Text::setColor({0x33, 0xFF, 0x33});
+      else if(success == 0)Text::setColor({0xFF, 0x33, 0x33});
+      else Text::setColor({0xFF, 0xA7, 0x36});
+
+      Text::printf(resPosX, posY, "%03d/%03d", success, total);
+    }
+    Text::setAlignLeft();
+
+    posY += 10;
+  }
+
+  drawLineH(posX, posY, SCREEN_WIDTH-14);
+
+  posY += 2;
+  Text::setAlignRight();
+
+  if((totalPassed + totalFailed) == 0) {
+    Text::printf(resPosX, posY, "---/---", totalPassed, totalPassed + totalFailed);
+  } else {
+    if(totalPassed == (totalPassed + totalFailed))Text::setColor({0x33, 0xFF, 0x33});
+    else if(totalPassed == 0)Text::setColor({0xFF, 0x33, 0x33});
+    else Text::setColor({0xFF, 0xA7, 0x36});
+    Text::printf(resPosX, posY, "%03d/%03d", totalPassed, totalPassed + totalFailed);
+  }
+
+  Text::setAlignLeft();
+
+
+  Text::setColor(COL_SELECT);
+  Text::print(posX-10, posStartY + (nextDemoSel+1) * 10 - 1, ">");
+  Text::setColor();
+
+  posY = 160;
+  posX = 24;
+  Text::print(posX, posY, "   Select"); posY += 8;
+  Text::print(posX, posY, "   Run Test"); posY += 8;
+  Text::print(posX, posY, "   Dump Test"); posY += 8;
+
+  if(ctx.hasSdCard)
+  {
+    Text::print(posX, posY, ctx.useSdCard ? "R: (SD-Card)" : "R: (Logging)");
+  }
+
+  posY = 160;
+  Text::setColor({0xff, 0xd7, 0x36});
+  Text::print(posX, posY, "C:"); posY += 8;
+  Text::setColor({0x66, 0x66, 0xFF});
+  Text::print(posX, posY, "A:"); posY += 8;
+  Text::setColor({0x33, 0xFF, 0x33});
+  Text::print(posX, posY, "B:"); posY += 8;
+
+  posY = 208;
+
+  Text::setColor({0xAA, 0xFF, 0xAA});
+  Text::print(20, posY, "Repo: <WIP>");
+  posY += 10;
+  Text::setColor({0x77, 0x77, 0x99});
+  Text::print(20, posY, "(C) 2025 Max Beboek (HailToDodongo)"); posY += 10;
+  Text::setColor();
+
+  //Text::printSmall(128, 128, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  //Text::printSmall(128, 128+8, "abcdefghijklmnopqrstuvwxyz");
+  //Text::printSmall(128, 128+16, "0123456789_");
+
+  Text::setSpaceHidden(true);
+
+  // prevents flickering only present in ares, can't be bothered to check why
+  wait_ms(16);
+}
+
+/*void testText() {
+  int posY = 32;
+  for(int i=0; i<4; ++i) {
+    Text::print(16, posY, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"); posY += 8;
+    Text::print(16, posY, "abcdefghijklmnopqrstuvwxyz"); posY += 8;
+    Text::print(16, posY, "0123456789"); posY += 8;
+    Text::print(16, posY, "!@#$%^&*()-_=+[]{};:"); posY += 8;
+    Text::print(16, posY, "'\",.<>/?\\|`~"); posY += 8;
+    posY += 8;
+  }
+}*/
+

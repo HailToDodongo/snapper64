@@ -13,12 +13,13 @@ namespace {
   constexpr uint32_t SCREEN_WIDTH = 320;
   constexpr uint32_t SCREEN_HEIGHT = 240;
 
-  std::string toHex(uint32_t val) {
+  [[maybe_unused]] std::string toHex(uint32_t val) {
     char buf[9];
     sprintf(buf, "%08lX", val);
     return std::string{buf};
   }
-  std::string toHex(uint64_t val)
+
+  [[maybe_unused]] std::string toHex(uint64_t val)
   {
     char buf[17];
     sprintf(buf, "%016llX", val);
@@ -35,8 +36,8 @@ struct Context
 {
   surface_t *fb{};
 
-  int countAssertPassed = 0;
-  int countAssertFailed = 0;
+  int nextDemo{-1};
+  uint32_t frame{0};
 
   // if set, dumps data (e.g. framebuffer) to create reference files
   bool hasSdCard{};
@@ -45,8 +46,6 @@ struct Context
   bool autoAdvance{};
 
   void reset() {
-    countAssertPassed = 0;
-    countAssertFailed = 0;
   }
 };
 
