@@ -93,7 +93,7 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
     if(group.getTestCount() != total)
     {
       Text::setColor({0x99, 0x99, 0x99});
-      Text::printf(resPosX, posY, "---/---", success, total);
+      Text::printf(resPosX, posY, "---/%03d", group.getTestCount());
     } else {
 
       totalPassed += success;
