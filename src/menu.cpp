@@ -7,7 +7,10 @@
 
 #include "main.h"
 #include "framework/testGroup.h"
+#include "renderer/draw.h"
 #include "renderer/text.h"
+#include "utils/color.h"
+#include "utils/vecMath.h"
 
 namespace
 {
@@ -15,17 +18,34 @@ namespace
 
   constexpr color_t COL_SELECT{0x66, 0x66, 0xFF};
 
-  void drawBG(uint32_t testCount)
+  void drawCube(const fm_vec2_t &center, float size, color_t color)
   {
-    auto buff = (uint32_t*)ctx.fb->buffer;
-    int offset = ctx.frame / 4;
-    sys_hw_memset64(buff, 0, ctx.fb->stride * ctx.fb->height);
-  }
+    fm_vec4_t cubeVtx[8] = {
+      {-1, -1, -1}, { 1, -1, -1}, { 1,  1, -1}, {-1,  1, -1},
+      {-1, -1,  1}, { 1, -1,  1}, { 1,  1,  1}, {-1,  1,  1},
+    };
+    constexpr uint8_t indices[12][2] = {
+      {0,1}, {1,2}, {2,3}, {3,0}, {4,5}, {5,6},
+      {6,7}, {7,4}, {0,4}, {1,5}, {2,6}, {3,7},
+    };
 
-  void drawLineH(int posX, int posY, int endX)
-  {
-    for(int x=posX; x < endX; ++x) {
-      *((uint32_t*)ctx.fb->buffer + posY * (ctx.fb->stride / 4) + x) = 0x88888800;
+    fm_mat4_t modelMat{};
+    fm_vec3_t pos{0,0,0};
+    fm_vec3_t rot{0, ctx.frame * 0.011f, ctx.frame * 0.015f};
+    fm_mat4_from_rt_euler(&modelMat, rot.v, &pos);
+
+    for(auto &v : cubeVtx) {
+      fm_mat4_mul_vec4(&v, &modelMat, &v);
+      float zInv = 1.0f / (v.z + 3.0f) * size;
+      v = fm_vec4_t{v.x * zInv, v.y * zInv};
+    }
+
+    for(auto &idx : indices) {
+      Draw::lineF(
+        center + fm_vec2_t{cubeVtx[idx[0]].x, cubeVtx[idx[0]].y},
+        center + fm_vec2_t{cubeVtx[idx[1]].x, cubeVtx[idx[1]].y},
+        color
+      );
     }
   }
 
@@ -44,7 +64,7 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
   auto held = joypad_get_buttons_held(JOYPAD_PORT_1);
   auto press = joypad_get_buttons_pressed(JOYPAD_PORT_1);
 
-  drawBG(tests.size());
+  sys_hw_memset64(ctx.fb->buffer, 0, ctx.fb->stride * ctx.fb->height);
 
   if(press.d_up || press.c_up)--nextDemoSel;
   if(press.d_down || press.c_down)++nextDemoSel;
@@ -74,7 +94,7 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
   Text::print(resPosX, posY, "Results");
   Text::setAlignLeft();
   posY += 10;
-  drawLineH(posX, posY, SCREEN_WIDTH-14);
+  Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, {0x77, 0x77, 0x77});
   posY += 2;
 
   uint32_t totalPassed = 0;
@@ -110,7 +130,7 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
     posY += 10;
   }
 
-  drawLineH(posX, posY, SCREEN_WIDTH-14);
+  Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, {0x77, 0x77, 0x77});
 
   posY += 2;
   Text::setAlignRight();
@@ -128,7 +148,7 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
 
 
   Text::setColor(COL_SELECT);
-  Text::print(posX-10, posStartY + (nextDemoSel+1) * 10 - 1, ">");
+  Text::print(posX-10, posStartY + (nextDemoSel+1) * 10 - 1 + (nextDemoSel >= 0 ? 2 : 0), ">");
   Text::setColor();
 
   posY = 160;
@@ -170,8 +190,9 @@ void demoMenuDraw(const std::vector<TestGroup> &tests)
   buf[(posY+1) * (ctx.fb->stride / 4) + (214+2) ] = 0x77779900;
 
   Text::setColor();
-
   Text::setSpaceHidden(true);
+
+  drawCube({262, 176}, 40.0f, Color::rainbow(ctx.frame * 0.02f));
 
   // prevents flickering only present in ares, can't be bothered to check why
   wait_ms(16);

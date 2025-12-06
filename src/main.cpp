@@ -74,6 +74,8 @@ int main()
   for(;;) 
   {
     ++ctx.frame;
+    if(ctx.frame > 0xFFFF)ctx.frame = 0;
+
     VI::show();
     joypad_poll();
 

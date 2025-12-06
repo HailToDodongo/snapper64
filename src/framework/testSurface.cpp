@@ -7,6 +7,7 @@
 #include "../main.h"
 #include "../renderer/text.h"
 #include "../utils/rsp.h"
+#include "../renderer/draw.h"
 
 void TestSurface::attachAndClear(color_t clearColor)
 {
@@ -56,33 +57,17 @@ void TestSurface::draw(int x, int y, bool showAA)
     dst += ctx.fb->stride;
   }
 
-  uint32_t borderCol = lastTestSuccess ? 0x55EE55'00 : 0xEE5555'00;
+  color_t drawCol = lastTestSuccess ? color_t{0x55, 0xEE, 0x55} : color_t{0xEE, 0x55, 0x55};
 
-  // draw white border around image
-  for(int row=-1; row <= surface.height; ++row) {
-    if(row == -1 || row == surface.height) {
-      // top/bottom border
-      uint32_t *borderPtr = (uint32_t*)ctx.fb->buffer;
-      borderPtr += (y + row) * (ctx.fb->stride / 4);
-      borderPtr += x - 1;
-      for(int col=0; col < surface.width + 2; ++col) {
-        *borderPtr++ = borderCol;
-      }
-    } else {
-      // left/right border
-      uint32_t *leftPtr = (uint32_t*)ctx.fb->buffer;
-      leftPtr += (y + row) * (ctx.fb->stride / 4);
-      leftPtr += x - 1;
-      *leftPtr = borderCol;
+  Draw::quad(
+    {x-1, y-1},
+    {x + surface.width, y-1},
+    {x + surface.width, y + surface.height},
+    {x-1, y + surface.height},
+    drawCol
+  );
 
-      uint32_t *rightPtr = (uint32_t*)ctx.fb->buffer;
-      rightPtr += (y + row) * (ctx.fb->stride / 4);
-      rightPtr += x + surface.width;
-      *rightPtr = borderCol;
-    }
-  }
-
-  Text::setColor(color_from_packed32(borderCol));
+  Text::setColor(drawCol);
   Text::printSmall(x & ~0b11, y-7, name.c_str());
   //Text::printSmall(128, 128, "-.0123456789_:");
   Text::setColor();
