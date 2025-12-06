@@ -26,6 +26,12 @@ namespace {
     return std::string{buf};
   }
 
+  [[maybe_unused]] std::string toString(float val, int digits) {
+    char buf[32];
+    sprintf(buf, "%.*f", digits, val);
+    return std::string{buf};
+  }
+
   constexpr float operator "" _deg(long double x) { return static_cast<float>(x * DEG_TO_RAD); }
   constexpr float operator "" _rad(long double x) { return static_cast<float>(x); }
 

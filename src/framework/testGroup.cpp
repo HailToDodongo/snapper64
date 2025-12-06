@@ -76,7 +76,8 @@ bool TestGroup::run()
     debugf("Used: %u bytes \n",h.used);
 */
     if(held.z) {
-      wait_ms(500);
+      wait_ms(10);
+      --i;
     }
   }
 
