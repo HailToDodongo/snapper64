@@ -7,19 +7,20 @@
 
 namespace Hash
 {
+  #pragma GCC push_options
+  #pragma GCC optimize ("-O3")
+
   constexpr uint32_t crc32(const char* txt)
   {
-    int i = 0;
     uint32_t crc = 0xFFFFFFFF;
-    while(txt[i] != 0) {
-      uint32_t byte = txt[i];
-      crc = crc ^ byte;
-      for(int j = 7; j >= 0; j--) {
-        uint32_t mask = -(crc & 1);
-        crc = (crc >> 1) ^ (0xEDB88320 & mask);
+    while (*txt) {
+      crc ^= static_cast<uint8_t>(*txt++);
+      for (int k = 0; k < 8; k++) {
+        crc = (crc >> 1) ^ (0xEDB88320 & (-(crc & 1)));
       }
-      ++i;
     }
     return ~crc;
   }
+
+  #pragma GCC pop_options
 }

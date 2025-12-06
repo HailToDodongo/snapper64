@@ -59,7 +59,7 @@ void demoMenuInit()
   icons = sprite_load("rom:/");
 }
 
-void demoMenuDraw(const std::vector<TestGroup> &tests)
+void demoMenuDraw(const std::span<TestGroup> &tests)
 {
   auto held = joypad_get_buttons_held(JOYPAD_PORT_1);
   auto press = joypad_get_buttons_pressed(JOYPAD_PORT_1);

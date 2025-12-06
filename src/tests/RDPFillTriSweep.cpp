@@ -19,16 +19,15 @@ namespace Tests::RDPFillTriSweep
 {
   TestGroup create()
   {
-    TestGroup group{"RDP Fill Mode Tri (Sweep)"};
+    TestGroup group{"RDP Fill Mode Tri (Sweep)", SWEEP_COUNT * SWEEP_COUNT * 2};
 
-    for (auto [side, sweepY, sweepX] : TestMatrix(2, SWEEP_COUNT, SWEEP_COUNT))
+    for (const auto [side, sweepY, sweepX] : TestMatrix(2, SWEEP_COUNT, SWEEP_COUNT))
     {
       float sX = ((float)sweepX / (float)SWEEP_COUNT) * 2;
       float sY = ((float)sweepY / (float)SWEEP_COUNT) * 2;
 
-      std::string name = "Sweep " + std::to_string(side);
-      name += " | " + toString(sX, 2);
-      name += " | " + toString(sY, 2);
+      std::string name = side == 0 ? "Sweep 0 | " : "Sweep 1 | ";
+      name += toString(sX, 2) + " | " + toString(sY, 2);
 
       group.test(name, [side, sX, sY](Assert& assert)
       {

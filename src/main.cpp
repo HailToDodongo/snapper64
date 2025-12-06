@@ -8,27 +8,52 @@
 #include "renderer/text.h"
 #include "main.h"
 
+#include <set>
+#include <unordered_set>
+
 #include "framework/testGroup.h"
 #include "framework/testPack.h"
+#include "renderer/vi.h"
 
 typedef TestGroup (*TestCreateFunc)();
 
 #define TEST_ENTRY(X) namespace Tests::X { TestGroup create(); }
 #include "testList.h"
-#include "renderer/vi.h"
 #undef TEST_ENTRY
-
-constexpr fm_vec3_t UP_VECTOR{0, 1, 0};
-constexpr fm_vec3_t GRAVITY = -UP_VECTOR * 9.81f;
 
 constinit Context ctx{};
 
 extern void demoMenuInit();
-extern void demoMenuDraw(const std::vector<TestGroup> &tests);
+extern void demoMenuDraw(const std::span<TestGroup> &tests);
 
 namespace {
+
+  #define TEST_ENTRY(X) + 1
+  constexpr size_t TEST_GROUP_COUNT = 0
+    #include "testList.h"
+  ;
+  #undef TEST_ENTRY
+
   constexpr int TEST_IDX_MENU = -1;
-  constinit std::vector<TestGroup> tests{};
+  constinit std::array<TestGroup, TEST_GROUP_COUNT> tests{};
+
+  void validateTests()
+  {
+    std::unordered_set<uint32_t> groupNames{};
+    groupNames.reserve(tests.size());
+
+    for(const auto &group : tests) {
+      uint32_t hash = group.getNameHash();
+      assertf(groupNames.insert(hash).second, "Duplicate test group name hash detected: %s (hash %08lX)", group.getName().c_str(), hash);
+
+      std::unordered_set<uint32_t> testNames{};
+      testNames.reserve(group.getTestCount());
+      for(const auto &test : group.getTests()) {
+        uint32_t testHash = test.nameHash;
+        assertf(testNames.insert(testHash).second, "Duplicate test name detected in group %s: %s (hash %08lX)", group.getName().c_str(), test.name.c_str(), testHash);
+      }
+    }
+  }
 }
 
 [[noreturn]]
@@ -58,15 +83,24 @@ int main()
 
   TestPack::init();
 
+  auto tLoad = get_ticks();
   #define TEST_ENTRY(X) Tests::X::create(),
   tests = {
     #include "testList.h"
   };
+
   #undef TEST_ENTRY
+  tLoad = get_ticks() - tLoad;
+  debugf("[Debug] Loaded tests in %lld ms (%lld us)\n", TICKS_TO_MS(tLoad), TICKS_TO_US(tLoad));
 
   std::ranges::sort(tests, [](const TestGroup &a, const TestGroup &b) {
     return a.getName() < b.getName();
   });
+
+  /*auto t = get_ticks();
+  validateTests();
+  t = get_ticks() - t;
+  debugf("Test init: %lldms\n", TICKS_TO_MS(t));*/
 
   ctx.frame = 0;
   ctx.nextTest = TEST_IDX_MENU;

@@ -26,7 +26,7 @@ namespace Tests::RDPRectTri
 {
   TestGroup create()
   {
-    TestGroup group{"RDP Rect-Tri - Slopes"};
+    TestGroup group{"RDP Rect-Tri - Slopes", 250};
     constexpr int32_t SLOPE_STEP = 0x333;
 
     for(int i=0; i<250; ++i)

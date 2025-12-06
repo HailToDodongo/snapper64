@@ -44,6 +44,7 @@ add_executable(snapper64
         src/renderer/draw.cpp
         src/utils/color.h
         src/tests/RDPFillTriSweep.cpp
+        src/utils/hash.cpp
 )
 
 set_property(TARGET snapper64 PROPERTY CXX_STANDARD 23)

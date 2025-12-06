@@ -39,13 +39,20 @@ class TestGroup
     uint32_t countTested{0};
 
   public:
-    explicit TestGroup(std::string _name)
+    constexpr TestGroup() = default;
+
+    explicit TestGroup(std::string _name, uint32_t reserveTestCount = 64)
       : name{std::move(_name)} {
       nameHash = Hash::crc32(name.c_str());
+      entries.reserve(reserveTestCount);
     }
 
     [[nodiscard]] const std::string& getName() const {
       return name;
+    }
+
+    [[nodiscard]] uint32_t getNameHash() const {
+      return nameHash;
     }
 
     [[nodiscard]] const std::vector<TestEntry>& getTests() const {

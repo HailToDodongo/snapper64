@@ -38,7 +38,7 @@ namespace Tests::RDPTriShapeRot
 {
   TestGroup create()
   {
-    TestGroup group{"RDP Tri Shape+CVG - Rotation"};
+    TestGroup group{"RDP Tri Shape+CVG - Rotation", 36 * 36 * 3};
 
     for (auto [vtx, angle, vtxRot] : TestMatrix(3, 36, 36))
     {
