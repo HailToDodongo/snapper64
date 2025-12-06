@@ -3,7 +3,7 @@ include $(N64_INST)/include/n64.mk
 
 PROJECT_NAME = "snapper64"
 
-N64_CXXFLAGS += -std=gnu++23 -Os -fno-exceptions -fsingle-precision-constant
+N64_CXXFLAGS += -std=gnu++23 -O3 -fno-exceptions -fsingle-precision-constant
 
 src = $(wildcard src/*.cpp)
 src += $(wildcard src/tests/*.cpp)
@@ -59,7 +59,7 @@ tools/data_bundler: tools/dataBundler.cpp
 $(BUILD_DIR)/$(PROJECT_NAME).dfs: $(assets_conv) filesystem/tests.pack
 $(BUILD_DIR)/$(PROJECT_NAME).elf: $(src:%.cpp=$(BUILD_DIR)/%.o)
 
-$(PROJECT_NAME).z64: N64_ROM_TITLE="Snapper64 - RDP Test-ROM"
+$(PROJECT_NAME).z64: N64_ROM_TITLE="Snapper64 - RDP Test"
 $(PROJECT_NAME).z64: $(BUILD_DIR)/$(PROJECT_NAME).dfs
 
 fonts:

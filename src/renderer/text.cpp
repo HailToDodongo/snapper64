@@ -5,14 +5,14 @@
 #include <libdragon.h>
 #include "../main.h"
 #include "../renderer/text.h"
-#include "../utils/miMemory.h"
 
 namespace {
   constexpr uint32_t FMT_BUFF_SIZE = 128;
 
   constinit uint32_t currColor = 0xFFFFFF00;
   constinit uint8_t ignoreChar = 0;
-  constinit bool alignLeft = true;
+
+  constinit auto align = Text::Align::LEFT;
 
   #include "font.h"
   #include "font3x5.h"
@@ -28,19 +28,21 @@ void Text::setColor(color_t color)
   currColor = color_to_packed32(color);
 }
 
-void Text::setAlignLeft() {
-  alignLeft = true;
+void Text::setAlign(Align newAlign)
+{
+  align = newAlign;
 }
 
-void Text::setAlignRight() {
-  alignLeft = false;
-}
-
-int Text::print(int x, int y, const char *str) {
-  if(!alignLeft)
+int Text::print(int x, int y, const char *str)
+{
+  if(align == Align::RIGHT)
   {
     int textLen = strlen(str);
     x -= textLen * 8;
+  } else if(align == Align::CENTER)
+  {
+    int textLen = strlen(str);
+    x -= (textLen * 8) / 2;
   }
 
   auto fbBuff = (uint8_t*)ctx.fb->buffer;

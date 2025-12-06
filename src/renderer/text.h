@@ -6,10 +6,16 @@
 
 namespace Text
 {
+  enum class Align : uint32_t
+  {
+    LEFT = 0,
+    RIGHT = 1,
+    CENTER = 2
+  };
+
   void setSpaceHidden(bool hidden = true);
   void setColor(color_t color = {0xFF, 0xFF, 0xFF, 0xFF});
-  void setAlignLeft();
-  void setAlignRight();
+  void setAlign(Align newAlign);
 
   int print(int x, int y, const char* str);
   int printf(int x, int y, const char *fmt, ...);

@@ -14,13 +14,48 @@
 
 namespace
 {
-  constexpr int posStartY = 24;
+  constexpr int posStartY = 30;
 
   constexpr color_t COL_SELECT{0x66, 0x66, 0xFF};
 
+  constinit int tab = 1;
+  constinit int nextDemoSel = -1;
+
+  constexpr std::array<const char*, 3> TAB_NAMES{
+    "Failed",
+    "All",
+    "Options"
+  };
+
+  void drawTabs()
+  {
+    auto center = fm_vec2_t{SCREEN_WIDTH / 2.0f, posStartY-14};
+    float tabWidth = 48.0f;
+    float startX = center.x - ((TAB_NAMES.size() * tabWidth) / 2.0f);
+
+    constexpr color_t COL_DEF{0x99, 0x99, 0x99};
+    Text::setColor(COL_DEF);
+    Text::print(70, center.y-1, "<");
+    Text::print(SCREEN_WIDTH-70, center.y-1, ">");
+
+    Text::printSmall(70+8, center.y+2, "L");
+    Text::printSmall(SCREEN_WIDTH-70-4, center.y+2, "R");
+
+
+    Text::setAlign(Text::Align::CENTER);
+    for(size_t i = 0; i < TAB_NAMES.size(); ++i)
+    {
+      float posX = startX + (i * tabWidth) + (tabWidth / 2.0f);
+      Text::setColor(i == (size_t)tab ? COL_SELECT : COL_DEF);
+
+      Text::print((int)posX, center.y, TAB_NAMES[i]);
+    }
+    Text::setAlign(Text::Align::LEFT);
+  }
+
   void drawCube(const fm_vec2_t &center, float size, color_t color)
   {
-    fm_vec4_t cubeVtx[8] = {
+    fm_vec4_t vtx[8] = {
       {-1, -1, -1}, { 1, -1, -1}, { 1,  1, -1}, {-1,  1, -1},
       {-1, -1,  1}, { 1, -1,  1}, { 1,  1,  1}, {-1,  1,  1},
     };
@@ -34,7 +69,7 @@ namespace
     fm_vec3_t rot{0, ctx.frame * 0.011f, ctx.frame * 0.015f};
     fm_mat4_from_rt_euler(&modelMat, rot.v, &pos);
 
-    for(auto &v : cubeVtx) {
+    for(auto &v : vtx) {
       fm_mat4_mul_vec4(&v, &modelMat, &v);
       float zInv = 1.0f / (v.z + 3.0f) * size;
       v = fm_vec4_t{v.x * zInv, v.y * zInv};
@@ -42,21 +77,12 @@ namespace
 
     for(auto &idx : indices) {
       Draw::lineF(
-        center + fm_vec2_t{cubeVtx[idx[0]].x, cubeVtx[idx[0]].y},
-        center + fm_vec2_t{cubeVtx[idx[1]].x, cubeVtx[idx[1]].y},
+        center + fm_vec2_t{vtx[idx[0]].x, vtx[idx[0]].y},
+        center + fm_vec2_t{vtx[idx[1]].x, vtx[idx[1]].y},
         color
       );
     }
   }
-
-  constinit int tab = 0;
-  constinit int nextDemoSel = -1;
-  constinit sprite_t *icons{};
-}
-
-void demoMenuInit()
-{
-  icons = sprite_load("rom:/");
 }
 
 void demoMenuDraw(const std::span<TestGroup> &tests)
@@ -65,6 +91,11 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
   auto press = joypad_get_buttons_pressed(JOYPAD_PORT_1);
 
   sys_hw_memset64(ctx.fb->buffer, 0, ctx.fb->stride * ctx.fb->height);
+
+  if(press.l)--tab;
+  if(press.r)++tab;
+  if(tab < 0)tab = (int)TAB_NAMES.size() - 1;
+  if(tab >= (int)TAB_NAMES.size())tab = 0;
 
   if(press.d_up || press.c_up)--nextDemoSel;
   if(press.d_down || press.c_down)++nextDemoSel;
@@ -86,13 +117,15 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
   int resPosX = SCREEN_WIDTH - 14;
   int posY = posStartY;
 
+  drawTabs();
+
   Text::setColor(nextDemoSel < 0 ? COL_SELECT : color_t{0xFF, 0xFF, 0xFF});
   Text::print(posX, posY, "Run All");
 
-  Text::setAlignRight();
+  Text::setAlign(Text::Align::RIGHT);
   Text::setColor({0x99, 0x99, 0x99});
   Text::print(resPosX, posY, "Results");
-  Text::setAlignLeft();
+  Text::setAlign(Text::Align::LEFT);
   posY += 10;
   Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, {0x77, 0x77, 0x77});
   posY += 2;
@@ -109,7 +142,7 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
     Text::setColor(i == nextDemoSel ? COL_SELECT : color_t{0xFF, 0xFF, 0xFF});
     Text::print(posX, posY, group.getName().c_str());
 
-    Text::setAlignRight();
+    Text::setAlign(Text::Align::RIGHT);
     if(group.getTestCount() != total)
     {
       Text::setColor({0x99, 0x99, 0x99});
@@ -125,7 +158,7 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
 
       Text::printf(resPosX, posY, "%03d/%03d", success, total);
     }
-    Text::setAlignLeft();
+    Text::setAlign(Text::Align::LEFT);
 
     posY += 10;
   }
@@ -133,7 +166,7 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
   Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, {0x77, 0x77, 0x77});
 
   posY += 2;
-  Text::setAlignRight();
+  Text::setAlign(Text::Align::RIGHT);
 
   if((totalPassed + totalFailed) == 0) {
     Text::printf(resPosX, posY, "---/---", totalPassed, totalPassed + totalFailed);
@@ -144,8 +177,7 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
     Text::printf(resPosX, posY, "%03d/%03d", totalPassed, totalPassed + totalFailed);
   }
 
-  Text::setAlignLeft();
-
+  Text::setAlign(Text::Align::LEFT);
 
   Text::setColor(COL_SELECT);
   Text::print(posX-10, posStartY + (nextDemoSel+1) * 10 - 1 + (nextDemoSel >= 0 ? 2 : 0), ">");
@@ -176,21 +208,24 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
 
   posY = 208;
 
+  Text::setAlign(Text::Align::CENTER);
+
   Text::setColor({0xAA, 0xFF, 0xAA});
-  Text::print(20, posY, "github.com/HailToDodongo/snapper64");
+  Text::print(SCREEN_WIDTH/2, posY, "github.com/HailToDodongo/snapper64");
   posY += 10;
   Text::setColor({0x77, 0x77, 0x99});
-  Text::print(20 + 16*4, posY, "(C) 2025 Max Bebok");
+  Text::print(SCREEN_WIDTH/2, posY, "(C) 2025 Max Bebok");
 
   // actually "Bebök", too lazy to make my own name work so just set ü-dots manually here
   uint32_t* buf = (uint32_t*)ctx.fb->buffer;
-  buf[(posY+0) * (ctx.fb->stride / 4) + (214) ] = 0x77779900;
-  buf[(posY+1) * (ctx.fb->stride / 4) + (214) ] = 0x77779900;
-  buf[(posY+0) * (ctx.fb->stride / 4) + (214+2) ] = 0x77779900;
-  buf[(posY+1) * (ctx.fb->stride / 4) + (214+2) ] = 0x77779900;
+  buf[(posY+0) * (ctx.fb->stride / 4) + (218) ] = 0x77779900;
+  buf[(posY+1) * (ctx.fb->stride / 4) + (218) ] = 0x77779900;
+  buf[(posY+0) * (ctx.fb->stride / 4) + (218+2) ] = 0x77779900;
+  buf[(posY+1) * (ctx.fb->stride / 4) + (218+2) ] = 0x77779900;
 
   Text::setColor();
   Text::setSpaceHidden(true);
+  Text::setAlign(Text::Align::LEFT);
 
   drawCube({262, 176}, 40.0f, Color::rainbow(ctx.frame * 0.02f));
 

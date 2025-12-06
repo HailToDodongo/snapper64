@@ -23,7 +23,6 @@ typedef TestGroup (*TestCreateFunc)();
 
 constinit Context ctx{};
 
-extern void demoMenuInit();
 extern void demoMenuDraw(const std::span<TestGroup> &tests);
 
 namespace {
@@ -75,7 +74,9 @@ int main()
     surface_make((char*)0xA0400000, FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
   });
 
-  Text::print(SCREEN_WIDTH/2 - 7*4, SCREEN_HEIGHT/2 - 8, "Loading");
+  Text::setAlign(Text::Align::CENTER);
+    Text::print(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 8, "Loading");
+  Text::setAlign(Text::Align::LEFT);
   VI::show();
 
   ctx.hasSdCard = debug_init_sdfs("sd:/", -1);
