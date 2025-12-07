@@ -61,6 +61,7 @@ Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
   auto romPath = "rom:/" + fileName;
 
   surf.name = fileName.substr(0, fileName.size() - 5); // remove .test
+  surf.errorCount = 0;
 
   if(ctx.dumpData)
   {
@@ -118,16 +119,42 @@ Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
     }
 
     auto t3 = get_ticks();
-    auto buf = (uint64_t*)surf.get().buffer;
-    auto buffSteps = surf.get().stride * surf.get().height / 8;
     bool success = true;
-    for(uint32_t i=0; i < (uint32_t)buffSteps; ++i) {
-      if(buf[i] != refData[i]) {
-        success = false;
-        //refData[i] = 0xFF0000FF'FF0000FF;
-        break;
+
+    if(ctx.diffMode == DIFF_MODE::DIFF_COLOR || ctx.diffMode == DIFF_MODE::DIFF_CVG)
+    {
+      auto buf = (uint32_t*)surf.get().buffer;
+      auto buffSteps = surf.get().stride * surf.get().height / 4;
+
+      for(uint32_t i=0; i < (uint32_t)buffSteps; ++i)
+      {
+        uint32_t refVal = ((uint32_t*)refData)[i];
+        if(buf[i] != refVal)
+        {
+          success = false;
+          ++surf.errorCount;
+
+          uint32_t col = refVal == 0 ? 0xFFFFFF00 : 0xFF000000;
+          if(ctx.diffMode == DIFF_MODE::DIFF_CVG && (buf[i] & 0xFF) != (refVal & 0xFF)) {
+            col = 0xFFFFFFFF;
+          }
+          buf[i] = col;
+        } else {
+          buf[i] = 0;
+        }
       }
-      //buf[i] = refData[i];
+    } else {
+      auto buf = (uint64_t*)surf.get().buffer;
+      auto buffSteps = surf.get().stride * surf.get().height / 8;
+
+      for(uint32_t i=0; i < (uint32_t)buffSteps; ++i)
+      {
+        if(buf[i] != refData[i])success = false;
+      }
+    }
+
+    if(ctx.diffMode == DIFF_MODE::EXPECTED_COLOR || ctx.diffMode == DIFF_MODE::EXPECTED_CVG) {
+      memcpy(surf.get().buffer, refData, surf.getByteSize());
     }
 
     t3 = get_ticks() - t3;

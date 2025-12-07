@@ -14,7 +14,7 @@ namespace Text
     CENTER = 2
   };
 
-  void setSpaceHidden(bool hidden = true);
+  void setSpaceSize(int size = 8);
   void setColor(color_t color = {0xFF, 0xFF, 0xFF, 0xFF});
   void setBgColor(color_t color = {0x00, 0x00, 0x00, 0x00});
   void setAlign(Align newAlign);

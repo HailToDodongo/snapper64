@@ -44,15 +44,28 @@ struct Context
 
   int nextTest{};
   uint32_t frame{};
+  uint32_t diffMode = 0;
 
-  // if set, dumps data (e.g. framebuffer) to create reference files
   bool hasSdCard{};
-  bool useSdCard{false};
+  bool useSdCard{};
   bool dumpData{};
-  bool autoAdvance{};
+  bool autoAdvanceGroup{};
+  bool autoAdvanceTest{};
 
   void reset() {
   }
 };
+
+namespace DIFF_MODE
+{
+  constexpr uint32_t ACTUAL_COLOR   = 0;
+  constexpr uint32_t DIFF_COLOR     = 1;
+  constexpr uint32_t EXPECTED_COLOR = 2;
+
+  constexpr uint32_t ACTUAL_CVG     = 3;
+  constexpr uint32_t DIFF_CVG       = 4;
+  constexpr uint32_t EXPECTED_CVG   = 5;
+
+}
 
 extern Context ctx;

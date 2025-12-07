@@ -82,7 +82,7 @@ namespace Tests::RDPTriShapeRot
 
         assert.surface(surf);
 
-        surf.draw(32, 48, true);
+        surf.draw(32, 48);
         Text::print(100, 48 + surf.getHeight() + 8, "AA-Clamp | AA-Wrap");
       });
     }

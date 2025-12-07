@@ -12,7 +12,7 @@ namespace {
   constinit uint32_t currColor = 0xFFFFFF00;
   constinit uint32_t currBgColor = 0x00000000;
 
-  constinit uint8_t ignoreChar = 0;
+  constinit int spaceSize = 8;
 
   constinit auto align = Text::Align::LEFT;
 
@@ -20,9 +20,9 @@ namespace {
   #include "font3x5.h"
 }
 
-void Text::setSpaceHidden(bool hidden)
+void Text::setSpaceSize(int size)
 {
-  ignoreChar = hidden ? 0 : 0xFF;
+  spaceSize = size;
 }
 
 void Text::setColor(color_t color)
@@ -73,7 +73,7 @@ int Text::print(int x, int y, const char *str)
     uint64_t *buff = buffStart;
     ++x;
 
-    if(charCode != ignoreChar)
+    if(charCode || colBg)
     {
       for(int y=0; y<8; ++y)
       {
@@ -97,9 +97,11 @@ int Text::print(int x, int y, const char *str)
       }
       // draw extra black line below
       buff[0] = buff[1] = buff[2] = buff[3] = (colBg << 32) | colBg;
+      buffStart += 4;
+    } else {
+      buffStart += spaceSize/2;
     }
 
-    buffStart += 4;
     ++str;
   }
   //uint64_t charData = FONT_8x8_DATA[0];

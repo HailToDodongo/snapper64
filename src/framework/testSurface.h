@@ -15,6 +15,7 @@ class TestSurface
     std::string name{};
     bool lastTestSuccess{};
     surface_t surface{};
+    uint32_t errorCount{};
 
   public:
     TestSurface(tex_format_t format, uint16_t width, uint16_t height) {
@@ -52,7 +53,7 @@ class TestSurface
 
     void attachAndClear(color_t clearColor = {0,0,0,0});
 
-    void draw(int x, int y, bool showAA = false);
+    void draw(int x, int y);
 
     [[nodiscard]] const surface_t& get() const {
       return surface;

@@ -3,17 +3,16 @@
 * @license MIT
 */
 #include <libdragon.h>
-#include <vector>
-#include <algorithm>
-#include "renderer/text.h"
 #include "main.h"
-
-#include <set>
-#include <unordered_set>
-
+#include "renderer/text.h"
 #include "framework/testGroup.h"
 #include "framework/testPack.h"
 #include "renderer/vi.h"
+#include "menu/menu.h"
+
+#include <unordered_set>
+#include <vector>
+#include <algorithm>
 
 typedef TestGroup (*TestCreateFunc)();
 
@@ -22,8 +21,6 @@ typedef TestGroup (*TestCreateFunc)();
 #undef TEST_ENTRY
 
 constinit Context ctx{};
-
-extern void demoMenuDraw(const std::span<TestGroup> &tests);
 
 namespace {
 
@@ -81,6 +78,7 @@ int main()
 
   ctx.hasSdCard = debug_init_sdfs("sd:/", -1);
   ctx.useSdCard = ctx.hasSdCard;
+  ctx.autoAdvanceTest = true;
 
   TestPack::init();
 
@@ -115,15 +113,14 @@ int main()
     joypad_poll();
 
     Text::setColor();
-    Text::setSpaceHidden(false);
 
     if(ctx.nextTest == TEST_IDX_MENU) {
-      demoMenuDraw(tests);
+      Menu::draw(tests);
     } else {
-      if(!tests[ctx.nextTest].run() || !ctx.autoAdvance)
+      if(!tests[ctx.nextTest].run() || !ctx.autoAdvanceGroup)
       {
         ctx.nextTest = TEST_IDX_MENU;
-      } else if (ctx.autoAdvance) {
+      } else if (ctx.autoAdvanceGroup) {
         ++ctx.nextTest;
         if(ctx.nextTest >= (int)tests.size()) {
           ctx.nextTest = TEST_IDX_MENU;

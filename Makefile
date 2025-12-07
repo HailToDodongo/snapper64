@@ -10,6 +10,7 @@ src += $(wildcard src/tests/*.cpp)
 src += $(wildcard src/framework/*.cpp)
 src += $(wildcard src/renderer/*.cpp)
 src += $(wildcard src/utils/*.cpp)
+src += $(wildcard src/menu/*.cpp)
 
 assets_png = $(wildcard assets/*.rgba16.png)
 assets_test = $(wildcard assets/*.test.7z)
@@ -61,11 +62,6 @@ $(BUILD_DIR)/$(PROJECT_NAME).elf: $(src:%.cpp=$(BUILD_DIR)/%.o)
 
 $(PROJECT_NAME).z64: N64_ROM_TITLE="Snapper64 - RDP Test"
 $(PROJECT_NAME).z64: $(BUILD_DIR)/$(PROJECT_NAME).dfs
-
-fonts:
-	node tools/createFont.mjs assets/font.png src/font.h
-	node tools/createFontDobs
-	elta.mjs assets/font64.png src/font64.h
 
 sc64:
 	make -j8
