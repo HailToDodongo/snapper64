@@ -6,27 +6,35 @@
 
 #include <libdragon.h>
 
+extern "C" {
+  extern void* __mi_memset32(void *ptr, uint32_t value, size_t len);
+}
+
 namespace MiMem
 {
-  void writeAligned(volatile uint64_t *addr, uint64_t value, int bytes);
-  void zeroUnaligned(const volatile char* addr, int bytes);
+  extern bool isSupported;
 
-  inline void write(volatile void *addr, uint64_t value, int bytes)
+  inline void setU64(void *addr, uint64_t value, size_t len)
   {
-    uint32_t misalign = ((uint32_t)addr) & 0b111;
-    if(misalign) {
-      asm volatile ("sdl %0, 0(%1)\n" ::"r"(value), "r"(addr) : "memory");
-      addr = (char*)addr + (8  - misalign);
-      bytes -= (8  - misalign);
+    if(isSupported) {
+      sys_hw_memset64(addr, value, len);
+    } else {
+      uint64_t *ptr = static_cast<uint64_t*>(addr);
+      uint64_t *ptrEnd = ptr + (len / 8);
+      for(; ptr < ptrEnd; ++ptr)*ptr = value;
     }
-    writeAligned((volatile uint64_t*)addr, value, bytes);
   }
 
-  inline bool isSupported()
+  inline bool checkSupport()
   {
-    uint64_t *addr = (uint64_t*)0xA0300000;
-    addr[1] = 0xFF;
-    MiMem::writeAligned(addr, 0, 16);
-    return addr[1] == 0;
+    auto test = (uint32_t*)malloc_uncached(16);
+    __mi_memset32(test, 0x12345678, 16);
+
+    isSupported = test[0] == 0x12345678 && test[1] == 0x12345678
+      && test[2] == 0x12345678 && test[3] == 0x12345678;
+
+    free_uncached(test);
+
+    return isSupported;
   }
 }

@@ -6,6 +6,7 @@
 
 #include "../renderer/text.h"
 #include "../renderer/vi.h"
+#include "../utils/miMemory.h"
 
 namespace
 {
@@ -43,7 +44,7 @@ bool TestGroup::run()
     auto held = joypad_get_buttons_held(JOYPAD_PORT_1);
 
     if(forceDisplay) {
-      sys_hw_memset64(ctx.fb->buffer, 0, ctx.fb->height * ctx.fb->stride);
+      MiMem::setU64(ctx.fb->buffer, 0, ctx.fb->height * ctx.fb->stride);
     }
 
     //auto t = get_ticks();

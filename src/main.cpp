@@ -14,6 +14,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "utils/miMemory.h"
+
 typedef TestGroup (*TestCreateFunc)();
 
 #define TEST_ENTRY(X) namespace Tests::X { TestGroup create(); }
@@ -63,6 +65,7 @@ int main()
 
   joypad_init();
 
+  MiMem::checkSupport();
   VI::init();
 
   VI::setFrameBuffers({
@@ -73,6 +76,7 @@ int main()
 
   Text::setAlign(Text::Align::CENTER);
     Text::print(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 8, "Loading");
+    //Text::print(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 + 8, "(MI-Repeat not supported)");
   Text::setAlign(Text::Align::LEFT);
   VI::show();
 

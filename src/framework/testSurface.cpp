@@ -8,6 +8,7 @@
 #include "../renderer/text.h"
 #include "../utils/rsp.h"
 #include "../renderer/draw.h"
+#include "../utils/miMemory.h"
 
 void TestSurface::attachAndClear(color_t clearColor)
 {
@@ -28,7 +29,7 @@ void TestSurface::attachAndClear(color_t clearColor)
     .add(RDP::syncFull())
     .runAsync();
 
-  sys_hw_memset64(surface.buffer, clearValue, surface.stride * surface.height);
+  MiMem::setU64(surface.buffer, clearValue, surface.stride * surface.height);
 
   dpl.await();
   //a = get_ticks() - a; debugf("t: %lu us\n", TICKS_TO_US(a));

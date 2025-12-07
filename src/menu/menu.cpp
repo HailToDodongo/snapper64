@@ -11,6 +11,7 @@
 #include "../framework/testGroup.h"
 #include "../renderer/draw.h"
 #include "../renderer/text.h"
+#include "../utils/miMemory.h"
 
 namespace
 {
@@ -139,6 +140,18 @@ namespace
     Text::print(posX, posY, "   Dump Test"); posY += 8;
     Text::print(posX, posY, "   Stop Test"); posY += 8;
 
+    if(!MiMem::isSupported)
+    {
+      posY += 2;
+      Text::setBgColor({0xFF, 0x33, 0x33});
+      Text::setColor({0,0,0});
+      Text::setSpaceSize(2);
+      Text::print(posX, posY, "MI-Rep. not emulated, using fallback");
+      Text::setSpaceSize();
+      Text::setBgColor();
+      Text::setColor();
+    }
+
     posY = 160;
     Text::setColor({0xff, 0xd7, 0x36}); Text::print(posX, posY, "C:"); posY += 8;
     Text::setColor({0x66, 0x66, 0xFF}); Text::print(posX, posY, "A:"); posY += 8;
@@ -153,7 +166,7 @@ void Menu::draw(const std::span<TestGroup> &tests)
   auto held = joypad_get_buttons_held(JOYPAD_PORT_1);
   auto press = joypad_get_buttons_pressed(JOYPAD_PORT_1);
 
-  sys_hw_memset64(ctx.fb->buffer, 0, ctx.fb->stride * ctx.fb->height);
+  MiMem::setU64(ctx.fb->buffer, 0, ctx.fb->stride * ctx.fb->height);
 
   if(press.l)--tab;
   if(press.r)++tab;
