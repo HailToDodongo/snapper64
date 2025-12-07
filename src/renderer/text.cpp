@@ -10,6 +10,8 @@ namespace {
   constexpr uint32_t FMT_BUFF_SIZE = 128;
 
   constinit uint32_t currColor = 0xFFFFFF00;
+  constinit uint32_t currBgColor = 0x00000000;
+
   constinit uint8_t ignoreChar = 0;
 
   constinit auto align = Text::Align::LEFT;
@@ -26,6 +28,11 @@ void Text::setSpaceHidden(bool hidden)
 void Text::setColor(color_t color)
 {
   currColor = color_to_packed32(color);
+}
+
+void Text::setBgColor(color_t color)
+{
+  currBgColor = color_to_packed32(color);
 }
 
 void Text::setAlign(Align newAlign)
@@ -48,7 +55,16 @@ int Text::print(int x, int y, const char *str)
   auto fbBuff = (uint8_t*)ctx.fb->buffer;
 
   uint64_t *buffStart = (uint64_t*)&fbBuff[y * ctx.fb->stride + x*4];
-  uint64_t col = (uint64_t)currColor;
+  uint64_t col = currColor;
+  uint64_t colBg = currBgColor;
+  uint64_t val{};
+
+  if(currBgColor != 0)
+  {
+    for(int i=0; i<9; ++i) {
+      buffStart[-1 + (i * (ctx.fb->stride / 8))] = (colBg << 32) | colBg;
+    }
+  }
 
   while(*str)
   {
@@ -59,15 +75,20 @@ int Text::print(int x, int y, const char *str)
 
     if(charCode != ignoreChar)
     {
-      for(int y=0; y<8; ++y) {
-        for(int x=0; x<2; ++x) {
-          uint64_t val = (charData & 0b0001) ? (col << 32) : 0;
-          val |= (charData & 0b0010) ? (col <<  0) : 0;
-          buff[0] = val;
-          val  = (charData & 0b0100) ? (col << 32) : 0;
-          val |= (charData & 0b1000) ? (col <<  0) : 0;
+      for(int y=0; y<8; ++y)
+      {
+        for(int x=0; x<2; ++x)
+        {
+          if(colBg || (charData & 0b1111) != 0)
+          {
+            val  = (charData & 0b0001) ? (col << 32) : (colBg << 32);
+            val |= (charData & 0b0010) ? (col <<  0) : (colBg <<  0);
+            buff[0] = val;
 
-          buff[1] = val;
+            val  = (charData & 0b0100) ? (col << 32) : (colBg << 32);
+            val |= (charData & 0b1000) ? (col <<  0) : (colBg <<  0);
+            buff[1] = val;
+          }
 
           charData >>= 4;
           buff += 2;
@@ -75,10 +96,7 @@ int Text::print(int x, int y, const char *str)
         buff += (ctx.fb->stride / 8) - 4;
       }
       // draw extra black line below
-      buff[0] = 0;
-      buff[1] = 0;
-      buff[2] = 0;
-      buff[3] = 0;
+      buff[0] = buff[1] = buff[2] = buff[3] = (colBg << 32) | colBg;
     }
 
     buffStart += 4;

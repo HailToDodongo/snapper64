@@ -3,6 +3,7 @@
 * @license MIT
 */
 #pragma once
+#include <libdragon.h>
 
 namespace Text
 {
@@ -15,6 +16,7 @@ namespace Text
 
   void setSpaceHidden(bool hidden = true);
   void setColor(color_t color = {0xFF, 0xFF, 0xFF, 0xFF});
+  void setBgColor(color_t color = {0x00, 0x00, 0x00, 0x00});
   void setAlign(Align newAlign);
 
   int print(int x, int y, const char* str);

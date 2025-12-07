@@ -10,22 +10,19 @@
 #include "renderer/draw.h"
 #include "renderer/text.h"
 #include "utils/color.h"
-#include "utils/vecMath.h"
 
 namespace
 {
   constexpr int posStartY = 30;
 
+  constexpr color_t COL_WHITE{0xFF, 0xFF, 0xFF};
   constexpr color_t COL_SELECT{0x66, 0x66, 0xFF};
+  constexpr color_t COL_INACTIVE{0x77, 0x77, 0x77};
 
   constinit int tab = 1;
   constinit int nextDemoSel = -1;
 
-  constexpr std::array<const char*, 3> TAB_NAMES{
-    "Failed",
-    "All",
-    "Options"
-  };
+  constexpr std::array<const char*, 3> TAB_NAMES{"Failed", "All", "Options"};
 
   void drawTabs()
   {
@@ -33,22 +30,27 @@ namespace
     float tabWidth = 48.0f;
     float startX = center.x - ((TAB_NAMES.size() * tabWidth) / 2.0f);
 
-    constexpr color_t COL_DEF{0x99, 0x99, 0x99};
-    Text::setColor(COL_DEF);
+    Text::setColor(COL_INACTIVE);
     Text::print(70, center.y-1, "<");
     Text::print(SCREEN_WIDTH-70, center.y-1, ">");
 
     Text::printSmall(70+8, center.y+2, "L");
     Text::printSmall(SCREEN_WIDTH-70-4, center.y+2, "R");
 
-
     Text::setAlign(Text::Align::CENTER);
-    for(size_t i = 0; i < TAB_NAMES.size(); ++i)
+    for(int i = 0; i < (int)TAB_NAMES.size(); ++i)
     {
       float posX = startX + (i * tabWidth) + (tabWidth / 2.0f);
-      Text::setColor(i == (size_t)tab ? COL_SELECT : COL_DEF);
+      if(i == tab)
+      {
+        Text::setColor({0,0,0});
+        Text::setBgColor(COL_WHITE);
+      } else {
+        Text::setColor(COL_INACTIVE);
+      }
 
-      Text::print((int)posX, center.y, TAB_NAMES[i]);
+      Text::print(posX, center.y, TAB_NAMES[i]);
+      Text::setBgColor();
     }
     Text::setAlign(Text::Align::LEFT);
   }
@@ -119,15 +121,15 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
 
   drawTabs();
 
-  Text::setColor(nextDemoSel < 0 ? COL_SELECT : color_t{0xFF, 0xFF, 0xFF});
+  Text::setColor(nextDemoSel < 0 ? COL_SELECT : COL_WHITE);
   Text::print(posX, posY, "Run All");
 
   Text::setAlign(Text::Align::RIGHT);
-  Text::setColor({0x99, 0x99, 0x99});
+  Text::setColor(COL_INACTIVE);
   Text::print(resPosX, posY, "Results");
   Text::setAlign(Text::Align::LEFT);
   posY += 10;
-  Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, {0x77, 0x77, 0x77});
+  Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, COL_INACTIVE);
   posY += 2;
 
   uint32_t totalPassed = 0;
@@ -139,13 +141,13 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
     uint32_t success = group.getCountSuccess();
     uint32_t total = group.getCountTested();
 
-    Text::setColor(i == nextDemoSel ? COL_SELECT : color_t{0xFF, 0xFF, 0xFF});
+    Text::setColor(i == nextDemoSel ? COL_SELECT : COL_WHITE);
     Text::print(posX, posY, group.getName().c_str());
 
     Text::setAlign(Text::Align::RIGHT);
     if(group.getTestCount() != total)
     {
-      Text::setColor({0x99, 0x99, 0x99});
+      Text::setColor(COL_INACTIVE);
       Text::printf(resPosX, posY, "---/%03d", group.getTestCount());
     } else {
 
@@ -163,12 +165,13 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
     posY += 10;
   }
 
-  Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, {0x77, 0x77, 0x77});
+  Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, COL_INACTIVE);
 
   posY += 2;
   Text::setAlign(Text::Align::RIGHT);
 
   if((totalPassed + totalFailed) == 0) {
+    Text::setColor(COL_INACTIVE);
     Text::printf(resPosX, posY, "---/---", totalPassed, totalPassed + totalFailed);
   } else {
     if(totalPassed == (totalPassed + totalFailed))Text::setColor({0x33, 0xFF, 0x33});
@@ -228,24 +231,18 @@ void demoMenuDraw(const std::span<TestGroup> &tests)
   Text::setAlign(Text::Align::LEFT);
 
   drawCube({262, 176}, 40.0f, Color::rainbow(ctx.frame * 0.02f));
-
-  // prevents flickering only present in ares, can't be bothered to check why
-  wait_ms(16);
-}
-
-/*void testText() {
-  int posY = 32;
+/*
+  auto t = get_ticks();
+  posY = 32;
   Text::print(16, posY, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"); posY += 8;
   Text::print(16, posY, "abcdefghijklmnopqrstuvwxyz"); posY += 8;
   Text::print(16, posY, "0123456789"); posY += 8;
   Text::print(16, posY, "!@#$%^&*()-_=+[]{};:"); posY += 8;
   Text::print(16, posY, "'\",.<>/?\\|`~"); posY += 8;
+  t = get_ticks() - t;
+  debugf("[Debug] Text render time: %lld us\n", TICKS_TO_US(t));
+*/
 
-  Text::printSmall(128, 128, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-  Text::printSmall(128, 128+8, "abcdefghijklmnopqrstuvwxyz");
-  Text::printSmall(128, 128+16, "0123456789_");
-
-  posY += 8;
-  }
-}*/
-
+  // prevents flickering only present in ares, can't be bothered to check why
+  wait_ms(16);
+}
