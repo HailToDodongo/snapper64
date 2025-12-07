@@ -11,7 +11,7 @@ namespace Math
 
   float sinf(float angle);
 
-  static float cosf(float angle) {
+  static inline float cosf(float angle) {
     return sinf(angle + (PI / 2.0f));
   }
 }

@@ -35,7 +35,7 @@ namespace {
   constexpr int TEST_IDX_MENU = -1;
   constinit std::array<TestGroup, TEST_GROUP_COUNT> tests{};
 
-  void validateTests()
+  /*void validateTests()
   {
     std::unordered_set<uint32_t> groupNames{};
     groupNames.reserve(tests.size());
@@ -51,7 +51,7 @@ namespace {
         assertf(testNames.insert(testHash).second, "Duplicate test name detected in group %s: %s (hash %08lX)", group.getName().c_str(), test.name.c_str(), testHash);
       }
     }
-  }
+  }*/
 }
 
 [[noreturn]]

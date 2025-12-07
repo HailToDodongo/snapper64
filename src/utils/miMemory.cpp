@@ -51,34 +51,17 @@ extern "C" {
   }
 }
 
-namespace
+void MiMem::writeHiddenU16(volatile uint16_t *dst, uint16_t value, uint8_t hiddenBit)
 {
-  /**
-   * Writes a 16bit value to RDRAM, while setting the upper hidden bit to the given state.
-   * The lower hidden bit is destroyed.
-   * @param dst
-   * @param value visible RDRAM value
-   * @param hiddenBit desired state (0 or 1)
-   */
-  void writeHiddenU16(volatile uint16_t *dst, uint16_t value, uint8_t hiddenBit)
-  {
-    MEMORY_BARRIER();
-    if(hiddenBit) {
-      *dst = (value | 1); // LSB=1 forces both hidden-bits to be one
-    } else {
-      *dst = value & 0xFF00;  // LSB=0 forces both hidden-bits to be zero
-    }
-    MEMORY_BARRIER();
-    // set correct low byte, destroys low hidden-bit, preserves upper
-    ((volatile uint8_t*)dst)[1] = (uint8_t)value;
+  MEMORY_BARRIER();
+  if(hiddenBit) {
+    *dst = (value | 1); // LSB=1 forces both hidden-bits to be one
+  } else {
+    *dst = value & 0xFF00;  // LSB=0 forces both hidden-bits to be zero
   }
-
-  constinit sprite_t* bg{nullptr};
-
-  constexpr uint32_t HIDDEN_MASK_COUNT = 110;
-  constexpr uint32_t HIDDEN_MASK_COUNT_SAFE = 128;
-
-  __attribute__((aligned(8)))
-  constinit uint16_t *hiddenMask{nullptr};
+  MEMORY_BARRIER();
+  // set correct low byte, destroys low hidden-bit, preserves upper
+  ((volatile uint8_t*)dst)[1] = (uint8_t)value;
 }
+
 

@@ -14,6 +14,15 @@ namespace MiMem
 {
   extern bool isSupported;
 
+  /**
+   * Writes a 16bit value to RDRAM, while setting the upper hidden bit to the given state.
+   * The lower hidden bit is destroyed.
+   * @param dst
+   * @param value visible RDRAM value
+   * @param hiddenBit desired state (0 or 1)
+   */
+  void writeHiddenU16(volatile uint16_t *dst, uint16_t value, uint8_t hiddenBit);
+
   inline void setU64(void *addr, uint64_t value, size_t len)
   {
     if(isSupported) {

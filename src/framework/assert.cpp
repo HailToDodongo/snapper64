@@ -43,15 +43,15 @@ namespace
     return out;
   }
 
-  void hexByte(char* out, uint8_t value) {
+  /*void hexByte(char* out, uint8_t value) {
     out[0] = "0123456789ABCDEF"[value >> 4];
     out[1] = "0123456789ABCDEF"[value & 0xF];
-  }
+  }*/
 }
 
 Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
 {
-  auto t = get_ticks();
+  [[maybe_unused]] auto t = get_ticks();
   ++hashAssert;
 
   std::string fileName{};
