@@ -12,17 +12,21 @@
 #include "../renderer/draw.h"
 #include "../renderer/text.h"
 #include "../utils/miMemory.h"
+#include "../utils/vecMath.h"
 
 namespace
 {
   constexpr int posStartY = 30;
+  constexpr int VISIBLE_TESTS = 10;
 
   constexpr color_t COL_WHITE{0xFF, 0xFF, 0xFF};
   constexpr color_t COL_SELECT{0x66, 0x66, 0xFF};
   constexpr color_t COL_INACTIVE{0x77, 0x77, 0x77};
+  constexpr color_t COL_SCROLL{0xA7, 0xA7, 0xFF};
 
   constinit int tab = 1;
   constinit int nextDemoSel = -1;
+  constinit int scrollOffset = 0;
 
   constexpr int TAB_FAILED = 0;
   constexpr int TAB_ALL    = 1;
@@ -66,6 +70,19 @@ namespace
     int resPosX = SCREEN_WIDTH - 14;
     int posY = posStartY;
 
+    int arrowWobble = Math::sinf(ctx.frame * 0.1f) * 2;
+
+    int totalTests = filteredTests.size();
+    int startIdx = scrollOffset;
+    int endIdx = std::min(scrollOffset + VISIBLE_TESTS, totalTests);
+
+    // scrolling up arrow
+    if (scrollOffset > 0) {
+      Text::setColor(COL_SCROLL);
+      Text::print(SCREEN_WIDTH / 2, posY + 3 - arrowWobble, "^");
+      Text::setColor();
+    }
+
     Text::setColor(nextDemoSel < 0 ? COL_SELECT : COL_WHITE);
     Text::print(posX, posY, "Run All");
 
@@ -80,16 +97,19 @@ namespace
     uint32_t totalPassed = 0;
     uint32_t totalFailed = 0;
 
-    for(int i = 0; i < (int)filteredTests.size(); ++i)
+    for(auto i : filteredTests) {
+      auto &group = tests[i];
+      if(group.getTestCount() == group.getCountTested()) {
+        totalPassed += group.getCountSuccess();
+        totalFailed += group.getCountTested() - group.getCountSuccess();
+      }
+    }
+
+    for (int i = startIdx; i < endIdx; ++i)
     {
       auto &group = tests[filteredTests[i]];
       uint32_t success = group.getCountSuccess();
       uint32_t total = group.getCountTested();
-
-      if(group.getTestCount() == total) {
-        totalPassed += success;
-        totalFailed += (total - success);
-      }
 
       Text::setSpaceSize(4);
       Text::setColor(i == nextDemoSel ? COL_SELECT : COL_WHITE);
@@ -113,6 +133,12 @@ namespace
       posY += 10;
     }
 
+    if (endIdx < totalTests) {
+      Text::setColor(COL_SCROLL);
+      Text::print(SCREEN_WIDTH / 2, posY + arrowWobble, "v");
+      Text::setColor();
+    }
+
     Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, COL_INACTIVE);
 
     posY += 2;
@@ -131,7 +157,9 @@ namespace
     Text::setAlign(Text::Align::LEFT);
 
     Text::setColor(COL_SELECT);
-    Text::print(posX-10, posStartY + (nextDemoSel+1) * 10 - 1 + (nextDemoSel >= 0 ? 2 : 0), ">");
+    int cursorPos = posStartY + (nextDemoSel+1) * 10 - 1 + (nextDemoSel >= 0 ? 2 : 0);
+    cursorPos -= scrollOffset * 10;
+    Text::print(posX-10, cursorPos, ">");
     Text::setColor();
 
     posX = 24; posY = 160;
@@ -198,6 +226,13 @@ void Menu::draw(const std::span<TestGroup> &tests)
     if(press.d_down || press.c_down)++nextDemoSel;
     if(nextDemoSel < -1)nextDemoSel = filteredTests.size()-1;
     if(nextDemoSel >= (int)filteredTests.size())nextDemoSel = -1;
+
+    if (nextDemoSel >= 0) {
+      if (nextDemoSel < scrollOffset) scrollOffset = nextDemoSel;
+      if (nextDemoSel >= scrollOffset + VISIBLE_TESTS) scrollOffset = nextDemoSel - VISIBLE_TESTS + 1;
+    } else {
+      scrollOffset = 0;
+    }
 
     if(held.a || held.b) {
       ctx.nextTest = nextDemoSel < 0 ? 0 : filteredTests[nextDemoSel];
