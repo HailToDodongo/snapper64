@@ -15,6 +15,7 @@
 #include <algorithm>
 
 #include "utils/miMemory.h"
+#include "utils/sram.h"
 
 typedef TestGroup (*TestCreateFunc)();
 
@@ -82,9 +83,13 @@ int main()
   Text::setAlign(Text::Align::LEFT);
   VI::show();
 
+  SRAM::load(&ctx.saveData, sizeof(ctx.saveData));
+  if(ctx.saveData.magic != SAVE_DATA_MAGIC) {
+    SRAM::clear();
+    ctx.saveData = {};
+  }
+
   ctx.hasSdCard = debug_init_sdfs("sd:/", -1);
-  ctx.useSdCard = ctx.hasSdCard;
-  ctx.autoAdvanceTest = true;
 
   TestPack::init();
 
@@ -135,4 +140,9 @@ int main()
 
     }
   }
+}
+
+void Context::save()
+{
+  SRAM::save(&saveData, sizeof(saveData));
 }

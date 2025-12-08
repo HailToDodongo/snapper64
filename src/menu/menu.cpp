@@ -13,6 +13,7 @@
 #include "../renderer/text.h"
 #include "../utils/miMemory.h"
 #include "../utils/vecMath.h"
+#include "../utils/sram.h"
 
 namespace
 {
@@ -25,7 +26,6 @@ namespace
   constexpr color_t COL_SCROLL{0xA7, 0xA7, 0xFF};
 
   constinit int tab = 1;
-  constinit int nextDemoSel = -1;
   constinit int scrollOffset = 0;
 
   constexpr int TAB_FAILED = 0;
@@ -83,7 +83,7 @@ namespace
       Text::setColor();
     }
 
-    Text::setColor(nextDemoSel < 0 ? COL_SELECT : COL_WHITE);
+    Text::setColor(ctx.saveData.selTestGroup < 0 ? COL_SELECT : COL_WHITE);
     Text::print(posX, posY, "Run All");
 
     Text::setAlign(Text::Align::RIGHT);
@@ -112,7 +112,7 @@ namespace
       uint32_t total = group.getCountTested();
 
       Text::setSpaceSize(4);
-      Text::setColor(i == nextDemoSel ? COL_SELECT : COL_WHITE);
+      Text::setColor(i == ctx.saveData.selTestGroup ? COL_SELECT : COL_WHITE);
       Text::print(posX, posY, group.getName().c_str());
 
       Text::setSpaceSize();
@@ -157,7 +157,7 @@ namespace
     Text::setAlign(Text::Align::LEFT);
 
     Text::setColor(COL_SELECT);
-    int cursorPos = posStartY + (nextDemoSel+1) * 10 - 1 + (nextDemoSel >= 0 ? 2 : 0);
+    int cursorPos = posStartY + (ctx.saveData.selTestGroup+1) * 10 - 1 + (ctx.saveData.selTestGroup >= 0 ? 2 : 0);
     cursorPos -= scrollOffset * 10;
     Text::print(posX-10, cursorPos, ">");
     Text::setColor();
@@ -191,6 +191,7 @@ namespace
 
 void Menu::draw(const std::span<TestGroup> &tests)
 {
+  auto &selGroup = ctx.saveData.selTestGroup;
   auto held = joypad_get_buttons_held(JOYPAD_PORT_1);
   auto press = joypad_get_buttons_pressed(JOYPAD_PORT_1);
 
@@ -222,23 +223,23 @@ void Menu::draw(const std::span<TestGroup> &tests)
   if(tab == TAB_OPTIONS) {
     drawOptions();
   } else {
-    if(press.d_up || press.c_up)--nextDemoSel;
-    if(press.d_down || press.c_down)++nextDemoSel;
-    if(nextDemoSel < -1)nextDemoSel = filteredTests.size()-1;
-    if(nextDemoSel >= (int)filteredTests.size())nextDemoSel = -1;
+    if(press.d_up || press.c_up)--selGroup;
+    if(press.d_down || press.c_down)++selGroup;
+    if(selGroup < -1)selGroup = filteredTests.size()-1;
+    if(selGroup >= (int)filteredTests.size())selGroup = -1;
 
-    if (nextDemoSel >= 0) {
-      if (nextDemoSel < scrollOffset) scrollOffset = nextDemoSel;
-      if (nextDemoSel >= scrollOffset + VISIBLE_TESTS) scrollOffset = nextDemoSel - VISIBLE_TESTS + 1;
+    if (selGroup >= 0) {
+      if (selGroup < scrollOffset) scrollOffset = selGroup;
+      if (selGroup >= scrollOffset + VISIBLE_TESTS) scrollOffset = selGroup - VISIBLE_TESTS + 1;
     } else {
       scrollOffset = 0;
     }
 
     if(held.a || held.b) {
-      ctx.nextTest = nextDemoSel < 0 ? 0 : filteredTests[nextDemoSel];
+      ctx.nextTest = selGroup < 0 ? 0 : filteredTests[selGroup];
       ctx.dumpData = held.b;
-      ctx.autoAdvanceGroup = nextDemoSel < 0;
-      ctx.reset();
+      ctx.autoAdvanceGroup = selGroup < 0;
+      ctx.save();
     }
 
     drawTestSelection(tests, filteredTests);

@@ -48,6 +48,7 @@ add_executable(snapper64
         src/menu/menu.h
         src/menu/menuFooter.cpp
         src/menu/menuOptions.cpp
+        src/utils/sram.h
 )
 
 set_property(TARGET snapper64 PROPERTY CXX_STANDARD 23)

@@ -74,7 +74,10 @@ void TestSurface::draw(int x, int y)
   }
 
   color_t drawCol = lastTestSuccess ? color_t{0x55, 0xEE, 0x55} : color_t{0xEE, 0x55, 0x55};
-  if(!ctx.autoAdvanceTest && ctx.diffMode != DIFF_MODE::ACTUAL_COLOR && ctx.diffMode != DIFF_MODE::ACTUAL_CVG) {
+  if(!ctx.saveData.autoAdvanceTest
+    && ctx.diffMode != DIFF_MODE::ACTUAL_COLOR
+    && ctx.diffMode != DIFF_MODE::ACTUAL_CVG
+  ) {
     drawCol = color_t{0x66, 0x66, 0xFF};
   }
 

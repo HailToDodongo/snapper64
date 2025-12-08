@@ -8,6 +8,10 @@
 #include <vector>
 #include <array>
 
+#define DP_TEST_MODE ((volatile uint32_t*)0xA420'0004)
+#define DP_BUFTEST_ADDR ((volatile uint32_t*)0xA420'0008)
+#define DP_BUFTEST_DATA ((volatile uint32_t*)0xA420'000C)
+
 namespace 
 {
   constexpr uint64_t bitVal(uint64_t value, uint32_t startBit, uint32_t endBit) {
@@ -409,5 +413,36 @@ namespace RDP
       setOtherModes(OtherMode().cycleType(CYCLE::FILL)),
       setFillColor({0, 0, 0, 0})
     };
+  }
+
+  namespace TestMode
+  {
+    inline void enable() {
+      *DP_TEST_MODE = 1;
+    }
+    inline void disable() {
+      *DP_TEST_MODE = 0;
+    }
+
+    inline uint32_t spanRead(uint32_t idx)
+    {
+      *DP_BUFTEST_ADDR = idx;
+      MEMORY_BARRIER();
+      return *DP_BUFTEST_DATA;
+    }
+
+    inline void spanWrite(uint32_t idx, uint32_t val)
+    {
+      *DP_BUFTEST_ADDR = idx;
+      MEMORY_BARRIER();
+      *DP_BUFTEST_DATA = val;
+    }
+
+    inline void spanClear()
+    {
+      for(int i=0; i<64; ++i) {
+        spanWrite(i, 0);
+      }
+    }
   }
 }

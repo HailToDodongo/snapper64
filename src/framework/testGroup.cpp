@@ -29,7 +29,7 @@ bool TestGroup::run()
   countTested = 0;
   countSuccess = 0;
 
-  if(ctx.autoAdvanceTest)ctx.diffMode = 0;
+  if(ctx.saveData.autoAdvanceTest)ctx.diffMode = 0;
 
   for(uint32_t i=0; i<entries.size(); ++i)
   {
@@ -54,7 +54,7 @@ bool TestGroup::run()
     entry.errorCount = assert.errorCount;
     //debugf("[Debug] Test %ld us\n", TICKS_TO_US(t));
 
-    if(ctx.autoAdvanceTest) {
+    if(ctx.saveData.autoAdvanceTest) {
       Text::setColor({0x99, 0x99, 0xFF});
       Text::print(16, 16+0, name.c_str());
     }
@@ -74,7 +74,7 @@ bool TestGroup::run()
     }
 
     bool manualAdvance = pressed.l || pressed.r || held.z;
-    if(!ctx.autoAdvanceTest)
+    if(!ctx.saveData.autoAdvanceTest)
     {
       if(pressed.c_left)--ctx.diffMode;
       if(pressed.c_right)++ctx.diffMode;

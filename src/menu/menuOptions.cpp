@@ -22,12 +22,12 @@ namespace
   std::array<Option, 2> OPTIONS = {{
     {
       "Advance Tests:",
-      []{ ctx.autoAdvanceTest = !ctx.autoAdvanceTest; },
-      []{ return ctx.autoAdvanceTest ? "Auto" : "L/R to Step"; }
+      []{ ctx.saveData.autoAdvanceTest = !ctx.saveData.autoAdvanceTest; },
+      []{ return ctx.saveData.autoAdvanceTest ? "Auto" : "L/R to Step"; }
     }, {
       "Dump-Method:",
-      []{ ctx.useSdCard = !ctx.useSdCard; },
-      []{ return ctx.useSdCard ? "SD-Card" : "Logging"; }
+      []{ ctx.saveData.useSdCard = !ctx.saveData.useSdCard; },
+      []{ return ctx.saveData.useSdCard ? "SD-Card" : "Logging"; }
     },
   }};
 
@@ -65,6 +65,7 @@ void Menu::drawOptions()
 
     if(wantsToggle && i == selOption) {
       opt.action();
+      ctx.save();
     }
   }
 

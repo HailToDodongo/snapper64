@@ -63,6 +63,7 @@ $(BUILD_DIR)/$(PROJECT_NAME).dfs: $(assets_conv) filesystem/tests.pack filesyste
 $(BUILD_DIR)/$(PROJECT_NAME).elf: $(src:%.cpp=$(BUILD_DIR)/%.o)
 
 $(PROJECT_NAME).z64: N64_ROM_TITLE="Snapper64 - RDP Test"
+$(PROJECT_NAME).z64: N64_ROM_SAVETYPE=sram256k
 $(PROJECT_NAME).z64: $(BUILD_DIR)/$(PROJECT_NAME).dfs
 
 sc64:

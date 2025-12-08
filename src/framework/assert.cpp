@@ -65,7 +65,7 @@ Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
 
   if(ctx.dumpData)
   {
-    if(ctx.useSdCard)
+    if(ctx.saveData.useSdCard)
     {
       std::string sdPath = "sd:/tests/" + fileName;
       debugf("[DEBUG] Dumping test surface to %s\n", sdPath.c_str());

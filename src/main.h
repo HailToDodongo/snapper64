@@ -38,8 +38,18 @@ namespace {
   constexpr float toRad(float deg) { return deg * DEG_TO_RAD; }
 }
 
+constexpr uint32_t SAVE_DATA_MAGIC = 0xABCD'02;
+struct SaveData
+{
+  uint32_t magic{SAVE_DATA_MAGIC};
+  int selTestGroup{-1};
+  uint32_t useSdCard{0};
+  uint32_t autoAdvanceTest{1};
+};
+
 struct Context
 {
+  SaveData saveData{};
   surface_t *fb{};
 
   int nextTest{};
@@ -47,13 +57,10 @@ struct Context
   uint32_t diffMode = 0;
 
   bool hasSdCard{};
-  bool useSdCard{};
   bool dumpData{};
   bool autoAdvanceGroup{};
-  bool autoAdvanceTest{};
 
-  void reset() {
-  }
+  void save();
 };
 
 namespace DIFF_MODE
