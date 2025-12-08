@@ -10,6 +10,16 @@
 #include "../renderer/draw.h"
 #include "../utils/miMemory.h"
 
+void TestSurface::setPixel(uint32_t x, uint32_t y, uint32_t col)
+{
+  assert(x < (uint32_t)surface.width);
+  assert(y < (uint32_t)surface.height);
+
+  auto pix = (uint32_t*)surface.buffer;
+  pix += (y * (surface.stride / 4)) + x;
+  *pix = col;
+}
+
 void TestSurface::attachAndClear(color_t clearColor)
 {
   //uint64_t a = get_ticks();

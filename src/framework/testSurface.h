@@ -51,6 +51,12 @@ class TestSurface
       memset(surface.buffer, 0, getByteSize());
     }
 
+    void setPixel(uint32_t x, uint32_t y, uint32_t col);
+
+    void setPixel(uint32_t x, uint32_t y, color_t col) {
+      setPixel(x, y, color_to_packed32(col));
+    }
+
     void attachAndClear(color_t clearColor = {0,0,0,0});
 
     void draw(int x, int y);

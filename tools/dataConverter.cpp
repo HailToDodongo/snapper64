@@ -64,12 +64,15 @@ int main(int argc, char* argv[]) {
             b64.erase(0, b64.find_first_not_of(" \t\r\n"));
             b64.erase(b64.find_last_not_of(" \t\r\n") + 1);
 
-            std::vector<unsigned char> data = base64_decode(b64);
             std::string outPath = outDir + "/" + testName;
-            std::ofstream outfile(outPath, std::ios::binary);
-            if (outfile) {
+            {
+              std::vector<unsigned char> data = base64_decode(b64);
+              std::ofstream outfile(outPath, std::ios::binary);
+              if (outfile) {
                 outfile.write(reinterpret_cast<const char*>(data.data()), data.size());
                 printf("Wrote %zu bytes to %s\n", data.size(), outPath.c_str());
+              }
+              outfile.close();
             }
             testName.clear();
 

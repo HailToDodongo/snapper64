@@ -8,5 +8,6 @@ cmake*/
 nul
 test.txt
 node_modules/
+*.sav
 
 src/testList.h
