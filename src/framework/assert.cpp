@@ -6,6 +6,7 @@
 
 #include "testPack.h"
 #include "../renderer/vi.h"
+#include "../renderer/text.h"
 
 namespace
 {
@@ -47,6 +48,25 @@ namespace
     out[0] = "0123456789ABCDEF"[value >> 4];
     out[1] = "0123456789ABCDEF"[value & 0xF];
   }*/
+}
+
+Assert & Assert::equals(uint32_t a, uint32_t b, const std::string &msg, const Draw::IVec2 &pos)
+{
+  bool res = a == b;
+  if(res) {
+    Text::setColor({0x99,0xFF,0x99});
+    Text::printf(pos.x, pos.y, "%s: OK (%08X)", msg.c_str(), b, a);
+  }  else {
+    Text::setBgColor({0xFF, 0x66, 0x66});
+    Text::setColor({0,0,0});
+    Text::printf(pos.x, pos.y, "%s: %08X~%08X", msg.c_str(), b, a);
+  }
+
+  Text::setColor();
+  Text::setBgColor();
+
+  result(res);
+  return *this;
 }
 
 Assert& Assert::surface(TestSurface &surf, bool hiddenBits)

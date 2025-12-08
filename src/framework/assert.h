@@ -5,6 +5,7 @@
 #pragma once
 #include "testSurface.h"
 #include "../main.h"
+#include "../renderer/draw.h"
 
 struct Assert
 {
@@ -31,6 +32,8 @@ struct Assert
     result(a == b);
     return *this;
   }
+
+  Assert &equals(uint32_t a, uint32_t b, const std::string &msg, const Draw::IVec2 &pos);
 
   Assert &surface(TestSurface &surf, bool hiddenBits = false);
 };

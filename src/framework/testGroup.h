@@ -37,6 +37,7 @@ class TestGroup
 
     uint32_t countSuccess{0};
     uint32_t countTested{0};
+    bool useHighRes{false};
 
   public:
     constexpr TestGroup() = default;
@@ -65,6 +66,11 @@ class TestGroup
 
     [[nodiscard]] uint32_t getCountSuccess() const { return countSuccess; }
     [[nodiscard]] uint32_t getCountTested() const { return countTested; }
+
+    TestGroup& setHighRes(bool enabled = true) {
+      useHighRes = enabled;
+      return *this;
+    }
 
     TestGroup& test(const std::string &testName, TestFunc func) {
       entries.push_back({

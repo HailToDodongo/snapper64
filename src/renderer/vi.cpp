@@ -10,6 +10,11 @@
 namespace
 {
   constinit std::array<surface_t, 3> fbs{};
+
+  constinit std::array<surface_t, 3> fbsOrg{};
+  constinit std::array<surface_t, 3> fbsHighRes{};
+
+  constinit bool isHighRes{false};
   constinit uint32_t frame{0};
 
   volatile int64_t lastAliveTime{};
@@ -104,4 +109,23 @@ void VI::setFrameBuffers(std::array<surface_t, 3> fb)
 {
   fbs = fb;
   ctx.fb = &fbs[0];
+
+  fbsOrg = fbs;
+  fbsHighRes = fbs;
+  for(auto& f : fbsHighRes)
+  {
+    f.stride *= 2;
+    f.width *= 2;
+    f.height *= 2;
+  }
+}
+
+void VI::setHighRes(bool enabled)
+{
+  if(isHighRes != enabled)
+  {
+    isHighRes = enabled;
+    fbs = enabled ? fbsHighRes : fbsOrg;
+    vi_set_interlaced(enabled);
+  }
 }

@@ -15,4 +15,6 @@ namespace VI
   void keepAlive();
 
   void setFrameBuffers(std::array<surface_t, 3> fb);
+
+  void setHighRes(bool enabled);
 }

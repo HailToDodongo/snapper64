@@ -13,6 +13,19 @@ namespace {
   constexpr uint32_t SCREEN_WIDTH = 320;
   constexpr uint32_t SCREEN_HEIGHT = 240;
 
+  [[maybe_unused]] std::string toHex(uint8_t val)
+  {
+    char buf[3];
+    sprintf(buf, "%02X", val);
+    return std::string{buf};
+  }
+
+  [[maybe_unused]] std::string toHex(uint16_t val) {
+    char buf[5];
+    sprintf(buf, "%04X", val);
+    return std::string{buf};
+  }
+
   [[maybe_unused]] std::string toHex(uint32_t val) {
     char buf[9];
     sprintf(buf, "%08lX", val);

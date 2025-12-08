@@ -71,10 +71,14 @@ int main()
   MiMem::checkSupport();
   VI::init();
 
+  constexpr uint32_t BASE_ADDR = 0xA0400000;
+  constexpr uint32_t FB_MAX_SIZE = (SCREEN_WIDTH*2 * SCREEN_HEIGHT*2) * 4;
+  static_assert((BASE_ADDR + FB_MAX_SIZE*3) < 0xA07A0000, "Not enough space for framebuffers");
+
   VI::setFrameBuffers({
-    surface_make((char*)0xA0300000, FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
-    surface_make((char*)0xA0380000, FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
-    surface_make((char*)0xA0400000, FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
+    surface_make((char*)(BASE_ADDR + FB_MAX_SIZE*0), FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
+    surface_make((char*)(BASE_ADDR + FB_MAX_SIZE*1), FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
+    surface_make((char*)(BASE_ADDR + FB_MAX_SIZE*2), FMT_RGBA32, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*4),
   });
 
   Text::setAlign(Text::Align::CENTER);

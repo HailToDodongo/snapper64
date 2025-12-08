@@ -417,6 +417,8 @@ namespace RDP
 
   namespace TestMode
   {
+    constexpr uint32_t SPAN_WORDS = 128;
+
     inline void enable() {
       *DP_TEST_MODE = 1;
     }
@@ -440,7 +442,7 @@ namespace RDP
 
     inline void spanClear()
     {
-      for(int i=0; i<64; ++i) {
+      for(uint32_t i=0; i<SPAN_WORDS; ++i) {
         spanWrite(i, 0);
       }
     }

@@ -25,6 +25,9 @@ bool TestGroup::run()
   constexpr bool forceDisplay = true;
 
   Text::setColor();
+  if(forceDisplay) {
+    VI::setHighRes(useHighRes);
+  }
 
   countTested = 0;
   countSuccess = 0;
@@ -70,6 +73,7 @@ bool TestGroup::run()
     if(pressed.start) {
       countTested = 0;
       countSuccess = 0;
+      VI::setHighRes(false);
       return false;
     }
 
@@ -100,7 +104,9 @@ bool TestGroup::run()
       }
     }
 
-    if(forceDisplay)VI::show();
+    if(forceDisplay) {
+      VI::show();
+    }
   }
 
   // update counters in group
@@ -110,7 +116,11 @@ bool TestGroup::run()
     countSuccess += (entry.errorCount == 0) ? 1 : 0;
   }
 
-  if(forceDisplay)wait_ms(20);
+  if(forceDisplay)
+  {
+    VI::setHighRes(false);
+    wait_ms(20);
+  }
 
   return true;
 }
