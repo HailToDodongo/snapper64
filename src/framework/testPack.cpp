@@ -7,32 +7,33 @@
 
 namespace
 {
+  constexpr uint32_t ODD_SIZE_FLAG = (1 << 31);
   constinit FILE* f{};
-
-  struct PackHeader
-  {
-    char magic[4]; // "PACK"
-    uint32_t fileCount;
-  };
 
   struct PackEntry
   {
-    uint64_t id{};
+    uint32_t idGroup{};
+    uint32_t idTest{};
     uint32_t offset{};
-    int32_t size{};
+
+    uint64_t getId() const {
+      return ((uint64_t)idGroup << 32) | (uint64_t)idTest;
+    }
   };
 
-  constinit PackHeader header{};
-  PackEntry *packTable{};
+  struct PackIndex
+  {
+    uint32_t fileCount{};
+    PackEntry entries[];
+  };
+
+  PackIndex *table{};
 }
 
 void TestPack::init()
 {
+  table = (PackIndex*)asset_load("rom:/tests.pack.idx", nullptr);
   f = fopen("rom:/tests.pack", "rb");
-  fread(&header, sizeof(PackHeader), 1, f);
-  packTable = new PackEntry[header.fileCount];
-  fread(packTable, sizeof(PackEntry), header.fileCount, f);
-
   // debugf("Header: %.4s, fileCount=%u\n", header.magic, header.fileCount);
 }
 
@@ -42,20 +43,28 @@ void* TestPack::load(uint32_t groupId, uint32_t testId, uint8_t assertId)
   uint64_t id = ((uint64_t)groupId << 32) | (uint64_t)testId;
 
   int left = 0;
-  int right = header.fileCount - 1;
+  int right = table->fileCount - 1;
   while (left <= right) {
     int mid = left + (right - left) / 2;
-    if (packTable[mid].id == id) {
+    if (table->entries[mid].getId() == id) {
       // get to first entry with the same ID
-      while (mid > 0 && packTable[mid-1].id == id) {
+      while (mid > 0 && table->entries[mid-1].getId() == id) {
         --mid;
       }
 
       // assertID is an index, there are N amount of the same ID entries
       mid += assertId-1;
-      if(packTable[mid].id != id)break;
+      if(table->entries[mid].getId() != id)break;
 
-      fseek(f, packTable[mid].offset, SEEK_SET);
+      uint32_t offset = table->entries[mid].offset & ~ODD_SIZE_FLAG;
+      uint32_t nextOffset = table->entries[mid+1].offset & ~ODD_SIZE_FLAG;
+
+      fseek(f, offset, SEEK_SET);
+
+      int size = nextOffset - offset;
+      if(table->entries[mid].offset & ODD_SIZE_FLAG) {
+        size -= 1;
+      }
 
       //t = get_ticks() - t;
       /*debugf("Loading pack entry ID=%016llX, offset=%u, size=%d | %u us\n",
@@ -65,10 +74,9 @@ void* TestPack::load(uint32_t groupId, uint32_t testId, uint8_t assertId)
         0 //TICKS_TO_US(t)
       );*/
 
-      int size = packTable[mid].size;
       return asset_loadf(f, &size);
     }
-    if (packTable[mid].id < id) {
+    if (table->entries[mid].getId() < id) {
       left = mid + 1;
     } else {
       right = mid - 1;

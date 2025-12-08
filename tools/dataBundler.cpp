@@ -28,6 +28,10 @@ uint32_t align16(uint32_t offset) {
   return (offset + 15) & ~0xF;
 }
 
+uint32_t align2(uint32_t offset) {
+  return (offset + 1) & ~0x1;
+}
+
 bool parseFileName(const std::string& filename, FileEntry& entry) {
   size_t pos1 = filename.find('_');
   size_t pos2 = filename.find('_', pos1 + 1);
@@ -50,6 +54,7 @@ int main(int argc, char* argv[])
 
   std::string inDir = argv[1];
   std::string outFile = argv[2];
+  std::string outFileIdx = outFile + ".idx";
 
   std::vector<FileEntry> files;
   for (const auto& entry : fs::directory_iterator(inDir)) {
@@ -69,42 +74,60 @@ int main(int argc, char* argv[])
     return a.idAssert < b.idAssert;
   });
 
-  std::vector<TableEntry> table;
-  uint32_t dataOffset = align16(sizeof(uint32_t) + files.size() * 16); // count + table
+  // end marker dummy file
+  files.push_back({0xFFFFFFFF, 0xFFFFFFFF, 0, "", 2});
+
+  std::vector<TableEntry> table{};
+  uint32_t dataOffset{0};
 
   for (const auto& fe : files) {
     table.push_back({dataOffset, fe.size, fe.idGroup, fe.idTest, fe.idAssert});
-    dataOffset = align16(dataOffset + fe.size);
+    dataOffset = align2(dataOffset + fe.size);
   }
 
-  std::ofstream out{outFile, std::ios::binary};
+  std::ofstream outPack{outFile, std::ios::binary};
+  std::ofstream outIdx{outFileIdx, std::ios::binary};
+
 
   auto writeU32 = [&](uint32_t val) {
     uint32_t be = std::byteswap(val);
-    out.write((const char*)(&be), sizeof(be));
+    outIdx.write((const char*)(&be), sizeof(be));
   };
 
-  out << "PACK";
   writeU32(files.size());
   for (const auto& te : table) {
     writeU32(te.idGroup);
     writeU32(te.idTest);
-    writeU32(te.offset);
-    writeU32(te.size);
+
+    uint32_t offset = te.offset;
+    if(te.size % 2 != 0) {
+      offset |= 1 << 31;
+    }
+    writeU32(offset);
   }
+  outIdx.close();
 
   for (size_t i = 0; i < files.size(); ++i) {
-    out.seekp(table[i].offset, std::ios::beg);
-    std::ifstream in(files[i].path, std::ios::binary);
+    outPack.seekp(table[i].offset, std::ios::beg);
     std::vector<char> buffer(files[i].size);
-    in.read(buffer.data(), files[i].size);
-    out.write(buffer.data(), files[i].size);
+
+    if(!files[i].path.empty())
+    {
+      std::ifstream in(files[i].path, std::ios::binary);
+      in.read(buffer.data(), files[i].size);
+    } else
+    {
+      buffer.push_back(0);
+      buffer.push_back(0);
+    }
+    outPack.write(buffer.data(), files[i].size);
     uint64_t pad = align16(files[i].size) - files[i].size;
     if (pad) {
       std::vector<char> padding(pad, 0);
-      out.write(padding.data(), pad);
+      outPack.write(padding.data(), pad);
     }
   }
-  out.close();
+
+  outPack.close();
   return 0;
 }

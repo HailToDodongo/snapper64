@@ -65,6 +65,8 @@ int main()
 
   joypad_init();
 
+  assert_memory_expanded();
+
   MiMem::checkSupport();
   VI::init();
 

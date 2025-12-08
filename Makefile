@@ -44,11 +44,13 @@ pack_data/%.test: assets/%.test.7z
 	$(N64_BINDIR)/mkasset -c 3 -o $(dir $@) $@
 
 filesystem/tests.pack: tools/data_converter tools/data_bundler
+filesystem/tests.pack.idx: tools/data_converter tools/data_bundler
 
-filesystem/tests.pack: $(test_dumps)
+filesystem/tests.pack.idx filesystem/tests.pack: $(test_dumps)
 	@mkdir -p $(dir $@)
 	@echo "    [PACK] $@"
 	tools/data_bundler pack_data filesystem/tests.pack
+	$(N64_BINDIR)/mkasset -c 3 -o filesystem filesystem/tests.pack.idx
 
 # PC side tools
 tools/data_converter: tools/dataConverter.cpp
@@ -57,7 +59,7 @@ tools/data_converter: tools/dataConverter.cpp
 tools/data_bundler: tools/dataBundler.cpp
 	make -C tools
 
-$(BUILD_DIR)/$(PROJECT_NAME).dfs: $(assets_conv) filesystem/tests.pack
+$(BUILD_DIR)/$(PROJECT_NAME).dfs: $(assets_conv) filesystem/tests.pack filesystem/tests.pack.idx
 $(BUILD_DIR)/$(PROJECT_NAME).elf: $(src:%.cpp=$(BUILD_DIR)/%.o)
 
 $(PROJECT_NAME).z64: N64_ROM_TITLE="Snapper64 - RDP Test"
