@@ -1,3 +1,6 @@
+#################################################################
+##   NOTE: only serves as a project file to make CLion happy   ##
+#################################################################
 cmake_minimum_required(VERSION 3.30)
 project(snapper64)
 

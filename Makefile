@@ -22,7 +22,7 @@ all: $(PROJECT_NAME).z64
 
 # Generate testList.h by scanning files in src/tests/
 src/testList.h: $(sort $(wildcard src/tests/*.cpp))
-	@echo "    [DEMO LIST] $@"
+	@echo "    [TEST LIST] $@"
 	@echo "// This file is auto-generated. Do not edit directly." > $@
 	@for f in $(wildcard src/tests/*.cpp); do \
 		name=$$(basename $$f .cpp); \
