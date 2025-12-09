@@ -28,12 +28,12 @@ struct Assert
   }
 
   template<typename T>
-  Assert &equals(T a, T b) {
-    result(a == b);
+  Assert &equals(T actual, T expected) {
+    result(actual == expected);
     return *this;
   }
 
-  Assert &equals(uint32_t a, uint32_t b, const std::string &msg, const Draw::IVec2 &pos);
+  Assert &equals(uint32_t actual, uint32_t expected, const std::string &msg, const Draw::IVec2 &pos);
 
   Assert &surface(TestSurface &surf, bool hiddenBits = false);
 };

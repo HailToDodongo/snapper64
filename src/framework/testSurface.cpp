@@ -29,11 +29,6 @@ void TestSurface::attachAndClear(color_t clearColor)
   uint64_t clearValue = color_to_packed32(clearColor);
   clearValue = (clearValue << 32) | clearValue;
 
-  if((surface.flags & SURFACE_FLAGS_TEXFORMAT) == FMT_RGBA16)
-  {
-    assertf(false, "@TODO: handle RGBA16 surface");
-  }
-
   RDP::DPL dpl{64};
   dpl.add(RDP::attach(surface))
     .add(RDP::syncFull())
@@ -45,8 +40,29 @@ void TestSurface::attachAndClear(color_t clearColor)
   //a = get_ticks() - a; debugf("t: %lu us\n", TICKS_TO_US(a));
 }
 
+void TestSurface::convertToRGBA32(bool withCoverage)
+{
+  assertf(!withCoverage, "@TODO: Coverage conversion not implemented yet");
+  if(surface_get_format(&surface) == FMT_RGBA32)return;
+
+  auto newSurf = surface_alloc(FMT_RGBA32, surface.width, surface.height);
+
+  auto src = (uint16_t*)surface.buffer;
+  auto dst = (uint32_t*)newSurf.buffer;
+  auto dstEnd = dst + (surface.width * surface.height);
+
+  while(dst != dstEnd) {
+    *dst = color_to_packed32(color_from_packed16(*src));
+    ++src;
+    ++dst;
+  }
+  surface_free(&surface);
+  surface = newSurf;
+}
+
 void TestSurface::draw(int x, int y)
 {
+  assertf(surface_get_format(&surface) == FMT_RGBA32, "Only RGBA32 can be drawn, use surf.convertToRGBA32()");
   assert(x % 2 == 0);
 
   auto dst = (char*)ctx.fb->buffer;

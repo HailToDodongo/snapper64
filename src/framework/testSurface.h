@@ -59,6 +59,8 @@ class TestSurface
 
     void attachAndClear(color_t clearColor = {0,0,0,0});
 
+    void convertToRGBA32(bool withCoverage);
+
     void draw(int x, int y);
 
     [[nodiscard]] const surface_t& get() const {

@@ -9,13 +9,10 @@
 #include "framework/testPack.h"
 #include "renderer/vi.h"
 #include "menu/menu.h"
-
-#include <unordered_set>
-#include <vector>
-#include <algorithm>
-
 #include "utils/miMemory.h"
 #include "utils/sram.h"
+
+#include <algorithm>
 
 typedef TestGroup (*TestCreateFunc)();
 

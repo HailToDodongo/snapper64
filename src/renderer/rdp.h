@@ -408,7 +408,7 @@ namespace RDP
 
     return {
       syncPipe(),
-      setColorImage(surf.buffer, fmt, bbp, surf.stride/4),
+      setColorImage(surf.buffer, fmt, bbp, surf.width),
       setScissor(0, 0, surf.width-1, surf.height-1),
       setOtherModes(OtherMode().cycleType(CYCLE::FILL)),
       setFillColor({0, 0, 0, 0})

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <libdragon.h>
+#include <vector>
 
 extern "C" {
   extern void* __mi_memset32(void *ptr, uint32_t value, size_t len);
@@ -22,6 +23,9 @@ namespace MiMem
    * @param hiddenBit desired state (0 or 1)
    */
   void writeHiddenU16(volatile uint16_t *dst, uint16_t value, uint8_t hiddenBit);
+
+  std::vector<uint32_t> ebusReadBytes(uint32_t* src, size_t numBytes);
+  std::vector<uint8_t> ebusReadBits(uint32_t* src, size_t numBytes);
 
   inline void setU64(void *addr, uint64_t value, size_t len)
   {

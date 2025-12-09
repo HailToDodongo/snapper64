@@ -39,7 +39,7 @@ add_executable(snapper64
         src/framework/testPack.h
         src/framework/testPack.cpp
         src/utils/vecMath.cpp
-        src/menu.cpp
+        src/menu/menu.cpp
         src/renderer/draw.h
         src/renderer/draw.cpp
         src/utils/color.h
@@ -49,6 +49,7 @@ add_executable(snapper64
         src/menu/menuFooter.cpp
         src/menu/menuOptions.cpp
         src/utils/sram.h
+        src/tests/RAM9thBitRDP.cpp
 )
 
 set_property(TARGET snapper64 PROPERTY CXX_STANDARD 23)

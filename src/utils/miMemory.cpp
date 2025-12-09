@@ -15,10 +15,8 @@ extern "C" {
   */
   __attribute__((noinline))
   __attribute__((aligned(ICACHE_LINESIZE)))
-  void ebusReadBytes(uint8_t* dst, uint32_t* src, size_t numBytes)
+  void ebusReadBytes(uint32_t* dst, uint32_t* src, size_t numBytes)
   {
-    assert(numBytes % 4 == 0);
-
     // Pre-fill the cache as ebus test mode changes all RDRAM accesses, cache fetches
     // lock up the system while it is enabled.
     for (char* cur = (char*)(void*)ebusReadBytes; cur < &&__func_end; cur += ICACHE_LINESIZE)
@@ -32,6 +30,7 @@ extern "C" {
       uint32_t ebus_read;
 
       // extract hidden bits for this word, appearing as the 4 low-order bits
+      MEMORY_BARRIER();
       *MI_MODE = MI_WMODE_SET_EBUS;
       MEMORY_BARRIER();
       ebus_read = src[i];
@@ -39,15 +38,44 @@ extern "C" {
       *MI_MODE = MI_WMODE_CLR_EBUS;
       MEMORY_BARRIER();
 
-      // intentionally preserve the rest of the bits,
-      // this should be zero on hardware
-      dst[0] = (ebus_read >> 3) & 0b11111111'11110001;
-      dst[1] = (ebus_read >> 2) & 0b11111111'11110001;
-      dst[2] = (ebus_read >> 1) & 0b11111111'11110001;
-      dst[3] = (ebus_read >> 0) & 0b11111111'11110001;
-      dst += 4;
+      *dst = ebus_read;
+      ++dst;
     }
     __func_end:;
+  }
+
+  __attribute__((noinline))
+  __attribute__((aligned(ICACHE_LINESIZE)))
+  void ebusReadBits(uint8_t* dst, uint32_t* src, size_t numBytes)
+  {
+    // Pre-fill the cache as ebus test mode changes all RDRAM accesses, cache fetches
+    // lock up the system while it is enabled.
+    for (char* cur = (char*)(void*)ebusReadBytes; cur < &&__func_end2; cur += ICACHE_LINESIZE)
+    {
+      __asm__ ("cache 0x14, (%0)" : : "r"(cur));
+    }
+
+    size_t  numWords = numBytes / 4;
+    for (size_t i = 0; i < numWords; i++)
+    {
+      uint32_t ebus_read;
+
+      // extract hidden bits for this word, appearing as the 4 low-order bits
+      MEMORY_BARRIER();
+      *MI_MODE = MI_WMODE_SET_EBUS;
+      MEMORY_BARRIER();
+      ebus_read = src[i];
+      MEMORY_BARRIER();
+      *MI_MODE = MI_WMODE_CLR_EBUS;
+      MEMORY_BARRIER();
+
+      dst[0] = (ebus_read >> 3) & 0b1;
+      dst[1] = (ebus_read >> 2) & 0b1;
+      dst[2] = (ebus_read >> 1) & 0b1;
+      dst[3] = (ebus_read >> 0) & 0b1;
+      dst += 4;
+    }
+    __func_end2:;
   }
 }
 
@@ -62,6 +90,27 @@ void MiMem::writeHiddenU16(volatile uint16_t *dst, uint16_t value, uint8_t hidde
   MEMORY_BARRIER();
   // set correct low byte, destroys low hidden-bit, preserves upper
   ((volatile uint8_t*)dst)[1] = (uint8_t)value;
+}
+
+std::vector<uint32_t> MiMem::ebusReadBytes(uint32_t* src, size_t numBytes)
+{
+  assert(numBytes % 4 == 0);
+  std::vector<uint32_t> res{};
+  res.resize(numBytes / 4);
+  disable_interrupts();
+  ::ebusReadBytes(res.data(), src, numBytes);
+  enable_interrupts();
+  return res;
+}
+
+std::vector<uint8_t> MiMem::ebusReadBits(uint32_t* src, size_t numBytes)
+{
+  std::vector<uint8_t> bits{};
+  bits.resize(numBytes);
+  disable_interrupts();
+  ::ebusReadBits(bits.data(), src, numBytes);
+  enable_interrupts();
+  return bits;
 }
 
 

@@ -50,16 +50,16 @@ namespace
   }*/
 }
 
-Assert & Assert::equals(uint32_t a, uint32_t b, const std::string &msg, const Draw::IVec2 &pos)
+Assert & Assert::equals(uint32_t actual, uint32_t expected, const std::string &msg, const Draw::IVec2 &pos)
 {
-  bool res = a == b;
+  bool res = actual == expected;
   if(res) {
     Text::setColor({0x99,0xFF,0x99});
-    Text::printf(pos.x, pos.y, "%s: OK (%08X)", msg.c_str(), b, a);
+    Text::printf(pos.x, pos.y, "%s: OK (%08X)", msg.c_str(), expected);
   }  else {
     Text::setBgColor({0xFF, 0x66, 0x66});
     Text::setColor({0,0,0});
-    Text::printf(pos.x, pos.y, "%s: %08X~%08X", msg.c_str(), b, a);
+    Text::printf(pos.x, pos.y, "%s: %08X~%08X", msg.c_str(), expected, actual);
   }
 
   Text::setColor();
@@ -73,6 +73,8 @@ Assert& Assert::surface(TestSurface &surf, bool hiddenBits)
 {
   [[maybe_unused]] auto t = get_ticks();
   ++hashAssert;
+
+  assertf(surface_get_format(&surf.get()) == FMT_RGBA32, "Only RGBA32 surfaces are supported in Assert::surface");
 
   std::string fileName{};
   fileName.resize(32);
