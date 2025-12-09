@@ -55,8 +55,8 @@ namespace Tests::RDPRectNoSync1C
           pos[0] = 2;
           for(int x=0;  x<32; ++x)
           {
-            dplTri
-              .add(RDP::syncPipe())
+            dplTri // do multiple syncs here, otherwise the very first rects flicker on hardware
+              .add(RDP::syncPipe()).add(RDP::syncPipe())
               .add(RDP::setEnvColor({0xFF, 0xFF, 0xFF, 0xFF}))
               .add(RDP::fillRectSize(
                 pos[0], pos[1], x+baseSizeX, y+baseSizeY

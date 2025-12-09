@@ -291,6 +291,10 @@ namespace RDP
     return bitCmd(0x37) | value;
   }
 
+  constexpr uint64_t setFillColor32(color_t rgba) {
+    return bitCmd(0x37) | std::bit_cast<uint32_t>(rgba);
+  }
+
   constexpr uint64_t setScissor(float x0, float y0, float x1, float y1) {
     return bitCmd(0x2D)
       | bitVal(floatTo10p2(x0), 55, 44)
@@ -391,7 +395,9 @@ namespace RDP
     return triangle(attrs, verts[0], verts[1], verts[2]);
   }
 
-  constexpr uint64_t syncPipe() { return bitCmd(0xE7); }
+  constexpr uint64_t syncLoad() { return bitCmd(0x26); }
+  constexpr uint64_t syncPipe() { return bitCmd(0x27); }
+  constexpr uint64_t syncTile() { return bitCmd(0x28); }
   constexpr uint64_t syncFull() { return bitCmd(0x29); }
 
   constexpr uint64_t nop() {
