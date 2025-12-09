@@ -47,7 +47,7 @@ namespace
     }
   }
 
-  void onViInterrupt()
+  void onViInterrupt([[maybe_unused]] void* userData)
   {
     disable_interrupts();
     if(freeFB < 3)freeFB += 1;
@@ -72,11 +72,9 @@ void VI::init()
     vi_set_divot(false);
     vi_set_gamma(VI_GAMMA_DISABLE);
   vi_write_end();
-  wait_ms(14);
 
   disable_interrupts();
-    register_VI_handler(onViInterrupt);
-    set_VI_interrupt(1, VI_V_CURRENT_VBLANK);
+    vi_install_vblank_handler(onViInterrupt, nullptr);
   enable_interrupts();
 }
 
