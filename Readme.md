@@ -1,10 +1,8 @@
 # Snapper64
 Self-testing, self-contained, snapshot based RDP test-ROM for the N64.<br>
 
-<img src="docs/menu00.png" width="320">
-<img src="docs/test00.png" width="320">
-<img src="docs/test01.png" width="320">
-<img src="docs/test02.png" width="320">
+<img src="docs/menu00.png" width="320"><img src="docs/test00.png" width="320"><br>
+<img src="docs/test01.png" width="320"><img src="docs/test02.png" width="320">
 
 # Usage
 
