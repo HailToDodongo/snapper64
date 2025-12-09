@@ -105,7 +105,7 @@ namespace Tests::RDPUndefShade1C // <- must be same as filename
       // in the lambda by value
       group.test("Random " + std::to_string(i), [i](Assert& assert)
       {
-        RNG::setSeed(i * 0x123); // fixed RNG function if tests need reproducible randomness
+        RNG::setSeed(i * 0x1234 + 0x5678); // fixed RNG function if tests need reproducible randomness
         TestSurface surf{FMT_RGBA32, 128, 128}; // Allocate surface for testing
         surf.attachAndClear({0x22, 0x22, 0x22, 0x00}); // use for future RDP draws
 

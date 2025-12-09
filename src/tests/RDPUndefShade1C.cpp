@@ -33,7 +33,7 @@ namespace Tests::RDPUndefShade1C
     {
       group.test("Random " + std::to_string(i), [i](Assert& assert)
       {
-        RNG::setSeed(i * 0x123);
+        RNG::setSeed(i * 0x1234 + 0x5678);
         TestSurface surf{FMT_RGBA32, 128, 128};
         surf.attachAndClear({0x22, 0x22, 0x22, 0x00});
 
