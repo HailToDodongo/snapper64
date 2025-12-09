@@ -94,11 +94,13 @@ namespace
     Draw::line({posX, posY}, {SCREEN_WIDTH-14, posY}, COL_INACTIVE);
     posY += 2;
 
+    uint32_t totalExist = 0;
     uint32_t totalPassed = 0;
     uint32_t totalFailed = 0;
 
     for(auto i : filteredTests) {
       auto &group = tests[i];
+      totalExist += group.getTestCount();
       if(group.getTestCount() == group.getCountTested()) {
         totalPassed += group.getCountSuccess();
         totalFailed += group.getCountTested() - group.getCountSuccess();
@@ -144,14 +146,15 @@ namespace
     posY += 2;
     Text::setAlign(Text::Align::RIGHT);
 
-    if((totalPassed + totalFailed) == 0) {
+    uint32_t totalRan = totalPassed + totalFailed;
+    if(totalRan == 0) {
       Text::setColor(COL_INACTIVE);
       Text::printf(resPosX, posY, "----/----", totalPassed, totalPassed + totalFailed);
     } else {
-      if(totalPassed == (totalPassed + totalFailed))Text::setColor({0x33, 0xFF, 0x33});
+      if(totalPassed == totalExist)Text::setColor({0x33, 0xFF, 0x33});
       else if(totalPassed == 0)Text::setColor({0xFF, 0x33, 0x33});
       else Text::setColor({0xFF, 0xA7, 0x36});
-      Text::printf(resPosX, posY, "%04d/%04d", totalPassed, totalPassed + totalFailed);
+      Text::printf(resPosX, posY, "%04d/%04d", totalPassed, totalExist);
     }
 
     Text::setAlign(Text::Align::LEFT);

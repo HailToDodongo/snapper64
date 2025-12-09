@@ -62,7 +62,7 @@ void Menu::drawFooter()
   Text::setColor();
   Text::setAlign(Text::Align::LEFT);
 
-  drawCube({262, 176}, 40.0f, Color::rainbow(ctx.frame * 0.02f));
+  drawCube({272, 180}, 36.0f, Color::rainbow(ctx.frame * 0.02f));
 
   /*
     auto t = get_ticks();
